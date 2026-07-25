@@ -1,0 +1,82 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+
+<div class="lclleadboard">
+<div class="lb-tier-row head">
+    <div class="lb-tier-row">
+        {{#tiers}}
+            <a href="?levelid={{id}}" class="lb-tier-tab{{#active}} lb-active{{/active}} size">
+                <div class="pmag">
+                <img src="{{{icon}}}" alt="img{{id}}" class="tier-icon">
+                <span class="tier-label">{{name}}</span>
+                </div>
+                <img src="{{{icon}}}" alt="img{{id}}" class="tier-bg-icon">
+            </a>
+        {{/tiers}}
+    </div>
+    <div class="togglesection">
+        <label><b>Global</b></label>
+        <div class="lb-country-toggle">
+            <a href="{{toggle_global_url}}" class="lb-switch{{^is_country}} lb-switch-on{{/is_country}}">🌍</a>
+            <a href="{{{toggle_country_url}}}" class="lb-switch{{#is_country}} lb-switch-on{{/is_country}}">🏠</a>
+        </div>
+        <label><b>Country</b></label>
+    </div>
+</div>
+
+<div class="lb-card">
+    <div class="lb-rank-points">
+        <span>Your Rank: <b>{{user_rank}}</b></span>
+        <span style="margin-left:1em;">
+            {{{user_points}}}
+        </span>
+    </div>
+    {{#next_level}}
+    <div class="lb-progress-row">
+        <span>Progress: <b>{{points_to_next}}</b> pts to {{next_level}}</span>
+        <div class="lb-progress-bar"><div class="lb-progress" style="width:{{progress_pct}}%"></div></div>
+    </div>
+    {{/next_level}}
+</div>
+
+<table class="lb-table">
+    <thead>
+        <tr>
+            <th>Rank</th>
+            <th>Learner</th>
+            <th>Country</th>
+            <th>Tier</th>
+            <th>Points</th>
+        </tr>
+    </thead>
+    <tbody>
+        {{#users}}
+            <tr class="{{#is_you}}lb-row-you{{/is_you}}">
+                <td>{{rank}}</td>
+                <td>{{name}}</td>
+                <td>{{country}}</td>
+                <td>{{tier}}</td>
+                <td>{{{points}}}</td>
+            </tr>
+        {{/users}}
+        {{^users}}
+            <tr><td colspan="5" style="text-align:center;color:#aaa;">No data yet</td></tr>
+        {{/users}}
+    </tbody>
+</table>
+</div>
+

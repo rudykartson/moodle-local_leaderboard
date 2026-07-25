@@ -1,0 +1,121 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_leaderboard/leaderboard
+
+    Context variables required for this template:
+    * isadmin - bool
+    * filtercountry - string (raw, for building hrefs)
+    * filterlevelid - int
+    * tabs - array of {name, active, url}
+    * globalurl - string
+    * countryurl - string
+    * is_country - bool
+    * usercolorcode - string, hex colour for points icon
+    * icon - string, icon classes
+    * userrank - int|string
+    * userlevelname - string
+    * userlevelcolor - string
+    * userpoints - int
+    * pointsstring - string
+    * rows - array of {rank, fullname, isuser, hastier, tiername, tiercolor, totalpoints}
+    * hasrows - bool
+}}
+
+<div class="leadadmin">
+    <div style="position: relative;">
+        <h2>{{#str}}leaderboard, local_leaderboard{{/str}}</h2>
+        {{#isadmin}}
+            <div class="dropdown lb-gear">
+                <a href="#" class="dropdown-toggle" id="dropdownMenuButton" aria-label="Actions menu"
+                data-bs-toggle="dropdown" aria-expanded="false" aria-controls="dropdownMenuButton2">
+                    <i class="icon fa fa-cog"></i>
+                </a>
+                <div class="dropdown-menu menu dropdown-menu-end" id="dropdownMenuButton2"
+                    data-rel="menu-content" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="./">View</a>
+                    <a class="dropdown-item" href="manage_level.php">Manage Level</a>
+                    <a class="dropdown-item" href="manage_rules.php">Manage Rules</a>
+                </div>
+            </div>
+        {{/isadmin}}
+    </div>
+
+    <!-- Tabs for tiers -->
+    <div class="lb-tabs">
+        {{#tabs}}
+        <a class="lb-tab{{#active}} active{{/active}}" href="{{url}}">{{name}}</a>
+        {{/tabs}}
+    </div>
+
+    <!-- Global/Country filter -->
+    <div style="margin-bottom: 1.2rem;">
+        <div class="togglesection">
+            <label><b>Global</b></label>
+            <div class="lb-country-toggle">
+                <a href="{{globalurl}}" class="lb-switch {{^is_country}}lb-switch-on{{/is_country}}">🌍</a>
+                <a href="{{countryurl}}" class="lb-switch {{#is_country}}lb-switch-on{{/is_country}}">🏠</a>
+            </div>
+            <label><b>Country</b></label>
+        </div>
+    </div>
+
+    <!-- User rank and points/tier -->
+    <div style="margin-bottom: 1.1rem;">
+        <strong>{{#str}}rank, local_leaderboard{{/str}}:</strong>
+        {{userrank}}
+        <span style="margin-left:1.3rem;">
+            <span class="lb-tier-badge" style="background:{{userlevelcolor}};">
+                {{userlevelname}}
+            </span>
+            <span style="margin-left:0.8rem;color:{{usercolorcode}};">
+                <i class="icon {{icon}}"></i> {{userpoints}} {{pointsstring}}
+            </span>
+        </span>
+    </div>
+
+    <!-- Leaderboard table -->
+    <table class="generaltable lb-table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Learner</th>
+                <th>Tier</th>
+                <th>{{pointsstring}}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {{#rows}}
+                <tr{{#isuser}} class="lb-row-user"{{/isuser}}>
+                    <td class="lb-rank">{{rank}}</td>
+                    <td>{{fullname}}{{#isuser}} <strong>({{#str}}you, local_leaderboard{{/str}})</strong>{{/isuser}}</td>
+                    <td>
+                        {{#hastier}}
+                        <span class="lb-tier-badge" style="background:{{tiercolor}}">{{tiername}}</span>
+                        {{/hastier}}
+                        {{^hastier}}—{{/hastier}}
+                    </td>
+                    <td><i class="icon {{icon}}" style="color:{{usercolorcode}};"></i> {{totalpoints}}</td>
+                </tr>
+            {{/rows}}
+            {{^hasrows}}
+                <tr><td colspan="4" style="text-align:center;color:#aaa;">No data yet</td></tr>
+            {{/hasrows}}
+        </tbody>
+    </table>
+
+</div>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/leaderboard/db" VERSION="20240711" COMMENT="Leaderboard plugin tables">
+  <TABLES>
+    <TABLE NAME="local_leaderboard_points" COMMENT="Stores user points per activity">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" SEQUENCE="true" NOTNULL="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="points" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="event" TYPE="char" LENGTH="16" NOTNULL="true"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="user_idx" UNIQUE="false" FIELDS="userid"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_leaderboard_levels" COMMENT="Level tiers">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" SEQUENCE="true" NOTNULL="true"/>
+        <FIELD NAME="name" TYPE="char" LENGTH="64" NOTNULL="true"/>
+        <FIELD NAME="min_points" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="max_points" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="sortorder" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="color" TYPE="text" LENGTH="50" NULL="true"/>
+        <FIELD NAME="img" TYPE="text" LENGTH="150" NULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="local_leaderboard_rules" COMMENT="Points rules: platform, course, or activity">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" SEQUENCE="true" NOTNULL="true"/>
+        <FIELD NAME="scope" TYPE="char" LENGTH="16" NOTNULL="true"/>
+        <FIELD NAME="scopeid" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="activitytype" TYPE="char" LENGTH="32" NOTNULL="true"/>
+        <FIELD NAME="event" TYPE="char" LENGTH="16" NOTNULL="true"/>
+        <FIELD NAME="points" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
