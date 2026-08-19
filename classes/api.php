@@ -102,30 +102,37 @@ class api {
 
         $params = [];
         $where = "u.deleted = 0";
-        // if (!empty($filters['country'])) {
-        //     $where .= " AND u.country = ?";
-        //     $params[] = $filters['country'];
-        // }
+        if (!empty($filters['country'])) {
+            $where .= " AND u.country = :country";
+            $params['country'] = $filters['country'];
+        }
 
-        // Get points
+        // Aggregate points per user in one query.
         $sql = "SELECT u.id, u.firstname, u.lastname, u.country,
-                       SUM(lp.points) AS totalpoints
+                       SUM(lp.points) AS totalpoints,
+                       MAX(lp.timecreated) AS latesttime
                 FROM {user} u
                 JOIN {local_leaderboard_points} lp ON lp.userid = u.id
                 WHERE $where
                 GROUP BY u.id, u.firstname, u.lastname, u.country
                 HAVING SUM(lp.points) > 0
                 ORDER BY totalpoints DESC, u.firstname, u.lastname";
-        
-        if ($limit) {
-            $sql .= " LIMIT " . intval($limit);
-        }
-        
+
         $users = $DB->get_records_sql($sql, $params);
 
-        // Attach level for each user (for tier filter)
+        // Fetch referral counts for ALL users in a single query (fixes N+1).
+        $referralcounts = self::get_referral_counts();
+        $referralpointsvalue = (int) get_config('local_leaderboard', 'referralpoints');
+
+        foreach ($users as $user) {
+            if ($referralpointsvalue > 0 && !empty($referralcounts[$user->id])) {
+                $user->totalpoints += $referralcounts[$user->id] * $referralpointsvalue;
+            }
+        }
+
+        // Attach level for each user (for tier filter).
         $levels = self::get_levels();
-        foreach ($users as &$user) {
+        foreach ($users as $user) {
             $user->levelid = null;
             foreach ($levels as $level) {
                 if ($user->totalpoints >= $level->min_points && $user->totalpoints <= $level->max_points) {
@@ -134,116 +141,57 @@ class api {
                 }
             }
         }
-        unset($user);
 
-        // Level filter
+        // Level filter.
         if (!empty($filters['levelid'])) {
             $users = array_filter($users, function($u) use ($filters) {
                 return $u->levelid == $filters['levelid'];
             });
         }
 
-
-        $sqll = "SELECT * FROM {local_leaderboard_points}";
-        $rows = $DB->get_records_sql($sqll);
-        
-        $sorusers = [];
-
-        foreach ($rows as $row) {
-            $row = (array)$row;
-            $uid = $row['userid'];
-            $points = $row['points'];
-            $time = $row['timecreated'];
-
-            if (!isset($sorusers[$uid])) {
-                $sorusers[$uid] = [
-                    'userid' => $uid,
-                    'total_points' => $points,
-                    'latest_time' => $time
-                ];
-            } else {
-                $sorusers[$uid]['total_points'] += $points;
-                if ($time > $sorusers[$uid]['latest_time']) {
-                    $sorusers[$uid]['latest_time'] = $time;
-                }
+        // Referral points can change totals, so re-sort after adding them.
+        $userlist = array_values($users);
+        usort($userlist, function($a, $b) {
+            if ($b->totalpoints != $a->totalpoints) {
+                return $b->totalpoints <=> $a->totalpoints;
             }
-            
-            
-        }
-        
-        foreach ($sorusers as $val) {
-            $uiid = $val['userid'];
-            $uiidpnt = $val['total_points'];
-            
-            $refcode = 'refusrid'.$uiid;
-            $refuser = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM mdl_user_info_data uid JOIN mdl_user_info_field uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=>"refuserid","uidata"=>$refcode]);
-                 
-            if (!empty($refuser) && !empty($refuser->total_users) && $refuser->total_users > 0) {
-            
-                $pntvalue = (int) get_config('local_leaderboard', 'referralpoints');
-                $pnt      = (int) $refuser->total_users * $pntvalue;
-                
-                $sorusers[$uiid]['total_points'] =  ($uiidpnt + $pnt);
-                
-            }
-            
-        }
-        
-        $userList = array_values($sorusers);
-
-
-
-        // Step 3: Sort by total_points DESC, then latest_time ASC (for desired 17,16,3 order)
-        usort($userList, function($a, $b) {
-            if ($b['total_points'] != $a['total_points']) {
-                return $b['total_points'] <=> $a['total_points'];
-            }
-            return $a['latest_time'] <=> $b['latest_time']; // prefer earlier time
+            return $a->latesttime <=> $b->latesttime;
         });
 
-        
-        
-        foreach ($users as $val) {
-            
-            
-            $uiid1 = $val->id;
-            $uiidpnt1 = $val->totalpoints;
-            
-            $refcode1 = 'refusrid'.$uiid1;
-            $refuser1 = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM mdl_user_info_data uid JOIN mdl_user_info_field uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=>"refuserid","uidata"=>$refcode1]);
-                 
-            if (!empty($refuser1) && !empty($refuser1->total_users) && $refuser1->total_users > 0) {
-            
-                $pntvalue1 = (int) get_config('local_leaderboard', 'referralpoints');
-                $pnt1      = (int) $refuser1->total_users * $pntvalue1;
-                
-                $users[$uiid1]->totalpoints =  ($uiidpnt1 + $pnt1);
-                
-            }
-        
+        if ($limit) {
+            $userlist = array_slice($userlist, 0, $limit);
         }
 
-        $newsorusers = [];
-        if($users){
-            foreach ($userList as $uList) {
-                if($index = $uList['userid']){
-                    if($users[$index]){
-                        if (!empty($filters['country']) && $users[$index]->country == $filters['country']) {
-                            $newsorusers[$index] = $users[$index];
-                        }
-                        if (empty($filters['country'])) {
-                            $newsorusers[$index] = $users[$index];
-                        }
-                    }
-                }
-            }
-        }
-
-
-
-        
-
-        return $newsorusers;
-        // return $users;
+        return $userlist;
     }
+
+    /**
+     * Get referral counts for every referrer in a single query.
+     *
+     * Custom profile field 'refuserid' stores values like "refusridX" on the
+     * referred user's profile, where X is the referring user's id.
+     *
+     * @return array Map of referrer userid => number of users they referred.
+     */
+    private static function get_referral_counts() {
+        global $DB;
+
+        $sql = "SELECT uid.data AS refcode, COUNT(DISTINCT uid.userid) AS total_users
+                FROM {user_info_data} uid
+                JOIN {user_info_field} uif ON uif.id = uid.fieldid
+                WHERE uif.shortname = :shortname
+                GROUP BY uid.data";
+
+        $records = $DB->get_records_sql($sql, ['shortname' => 'refuserid']);
+
+        $counts = [];
+        foreach ($records as $record) {
+            if (preg_match('/^refusrid(\d+)$/', $record->refcode, $matches)) {
+                $counts[(int) $matches[1]] = (int) $record->total_users;
+            }
+        }
+
+        return $counts;
+    }
+    
 }

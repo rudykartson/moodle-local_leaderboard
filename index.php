@@ -23,12 +23,13 @@ require(__DIR__ . '/../../config.php');
 require_login();
 global $DB, $CFG, $USER, $PAGE, $OUTPUT;
 // require_capability('local/leaderboard:view', context_system::instance());
+require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->dirroot."/lib/filelib.php");
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/leaderboard/index.php'));
-$PAGE->set_title('Leaderboard Top 10');
-$PAGE->set_heading('Leaderboard Top 10');
-$PAGE->requires->css('/local/leaderboard/styles.css');
+$PAGE->set_title(get_string('toprenker','local_leaderboard'));
+$PAGE->set_heading(get_string('toprenker','local_leaderboard'));
 
 require_once($CFG->dirroot.'/local/leaderboard/classes/api.php');
 
@@ -78,7 +79,32 @@ if ($userlevel && $nextlevel) {
 $tiers = [];
 foreach ($levels as $key => $level) {
     if($level->img){
-        $img = "assets/".$level->img;
+
+        $fs = get_file_storage();
+
+        $files = $fs->get_area_files(
+            $context->id,
+            'local_leaderboard',
+            'levelimage',
+            $level->img,     // itemid you stored on the record
+            'filepath, filename',
+            false            // exclude directory placeholder entries
+        );
+
+        $imageurl = '';
+        if ($files) {
+            $file = reset($files); // maxfiles was 1, so there's only ever one.
+            $imageurl = moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                $file->get_itemid(),
+                $file->get_filepath(),
+                $file->get_filename()
+            )->out(false);
+        }
+        $img = $imageurl;
+
     }else{
         $img = "assets/img".($key - 1).".png";
     }
@@ -109,11 +135,13 @@ foreach ($leaderboard as $u) {
         'is_you' => $is_you,
     ];
 }
-$firstFiveUsers = array_slice($users, 0, 5);
+$first_five_users = array_slice($users, 0, 10);
 $templatecontext = [
+    'pgurl' => $PAGE->url,
+    'cleanpgurltxt' => get_string('cleanpgurltxt','local_leaderboard'),
     'tiers' => $tiers,
-    'users' => $firstFiveUsers,
-    'user_rank' => array_search(true, array_column($firstFiveUsers, 'is_you')) !== false ? array_search(true, array_column($firstFiveUsers, 'is_you')) + 1 : '--',
+    'users' => $first_five_users,
+    'user_rank' => array_search(true, array_column($first_five_users, 'is_you')) !== false ? array_search(true, array_column($first_five_users, 'is_you')) + 1 : '--',
     'user_points' => '<i class="'.($icon ? $icon :'fa fa-star').'" style="color: '. (($colorcode != "#ffffff" && !empty($colorcode)) ? $colorcode : "#fb0") .';"></i> '.$userpoints.' Points',
     'next_level' => $nextlevel ? $nextlevel->name : null,
     'points_to_next' => $points_to_next > 0 ? $points_to_next : 0,

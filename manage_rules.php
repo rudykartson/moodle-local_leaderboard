@@ -26,8 +26,8 @@ require_capability('local/leaderboard:manage', context_system::instance());
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/leaderboard/manage_rules.php'));
-$PAGE->set_title('Add Points Rule');
-$PAGE->set_heading('Add Points Rule');
+$PAGE->set_title(get_string('add_pts_rule','local_leaderboard'));
+$PAGE->set_heading(get_string('add_pts_rule','local_leaderboard'));
 
 global $DB;
 
@@ -57,7 +57,8 @@ $mform = new local_leaderboard_rule_form(null, $customdata);
 if ($mform->is_cancelled()) {
     redirect('manage_rules.php');
 } else if ($data = $mform->get_data()) {
-    $data->cmid = $_POST['cmid']; 
+    $opcmid = optional_param('cmid', 0, PARAM_INT);
+    $data->cmid = $opcmid; 
 
     // Save rule!
     $activitytype = $data->activitytype;
@@ -77,59 +78,106 @@ if ($mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-echo '<div class="relatebtn"><a href="manage_level.php" class="btn btn-primary" >Manage Level</a></div>';
+echo html_writer::div(
+    html_writer::link(
+        new moodle_url('/local/leaderboard/manage_level.php'),
+        'Manage Level',
+        ['class' => 'btn btn-primary']
+    ),
+    'relatebtn'
+);
 $mform->display();
 
 // --- Show existing rules ---
-$rules = $DB->get_records_sql('SELECT lr.* FROM {local_leaderboard_rules} lr JOIN {course_modules} cm ON lr.scopeid = cm.id');
+$rules = $DB->get_records_sql(
+    'SELECT lr.* FROM {local_leaderboard_rules} lr JOIN {course_modules} cm ON lr.scopeid = cm.id'
+);
 
+    // --- Pass 1: collect every id we'll need to look up. ---
+    $courseids = [];
+    $cmids = [];
 
-echo html_writer::tag('h2', 'Existing Points Rules');
-echo '<table class="generaltable" style="background-color: #fff;"><tr>
-<th>Scope</th>
-<th>ScopeID</th>
-<th>Course</th>
-<th>Activity</th>
-<th>Activity Type</th>
-<th>Event</th>
-<th>Points</th>
-<th>Actions</th>
-</tr>';
-
-foreach ($rules as $rule) {
-    if (($rule->scope == 'activity' || $rule->scope == 'course') && empty($rule->scopeid)) {
-        continue;
-    }
-    $coursename = '';
-    if (($rule->scope == 'course' || $rule->scope == 'activity') && $rule->scopeid) {
+    foreach ($rules as $rule) {
+        if (($rule->scope == 'activity' || $rule->scope == 'course') && empty($rule->scopeid)) {
+            continue;
+        }
         if ($rule->scope == 'course') {
-            $course = $DB->get_record('course', ['id' => $rule->scopeid], 'fullname');
-            $coursename = $course ? $course->fullname : '';
+            $courseids[$rule->scopeid] = true;
         }
         if ($rule->scope == 'activity') {
-            $cm = get_coursemodule_from_id(null, $rule->scopeid, 0, false, MUST_EXIST);
-            $course = $DB->get_record('course', ['id' => $cm->course], 'fullname');
-            $coursename = $course ? $course->fullname : '';
+            $cmids[$rule->scopeid] = true;
         }
     }
-    $activityname = '';
-    if ($rule->scope == 'activity' && $rule->scopeid) {
-        $cm = get_coursemodule_from_id(null, $rule->scopeid, 0, false, MUST_EXIST);
-        $activityname = $cm ? format_string($cm->name) : '';
+
+    // --- Batch-fetch all course_modules for activity-scope rules: ONE query. ---
+    $cms = [];
+    if ($cmids) {
+        $cms = $DB->get_records_list('course_modules', 'id', array_keys($cmids));
+        foreach ($cms as $cm) {
+            $courseids[$cm->course] = true; // We'll need these course names too.
+        }
     }
-    $delurl = new moodle_url('/local/leaderboard/manage_rules.php', ['delete' => $rule->id, 'sesskey' => sesskey()]);
-    echo '<tr>';
-    echo '<td>' . s($rule->scope) . '</td>';
-    echo '<td>' . (int)$rule->scopeid . '</td>';
-    echo '<td>' . s($coursename) . '</td>';
-    echo '<td>' . s($activityname) . '</td>';
-    echo '<td>' . s($rule->activitytype) . '</td>';
-    echo '<td>' . s($rule->event) . '</td>';
-    echo '<td>' . (int)$rule->points . '</td>';
-    echo '<td>
-      <a href="' . $delurl . '" onclick="return confirm(\'Delete this rule?\')">Delete</a>
-      </td>';
-    echo '</tr>';
-}
-echo '</table>';
+
+    // --- Batch-fetch all course fullnames needed (both scopes): ONE query. ---
+    $coursenames = [];
+    if ($courseids) {
+        $coursenames = $DB->get_records_list('course', 'id', array_keys($courseids), '', 'id, fullname');
+    }
+
+    // --- Resolve activity names via get_fast_modinfo, once per DISTINCT course
+    //     (not once per rule) — modinfo is cached, so repeats are free. ---
+    $activitynames = [];
+    $modinfocache = [];
+    foreach ($cms as $cmid => $cm) {
+        if (!isset($modinfocache[$cm->course])) {
+            $modinfocache[$cm->course] = get_fast_modinfo($cm->course);
+        }
+        $cminfo = $modinfocache[$cm->course]->get_cm($cmid);
+        $activitynames[$cmid] = $cminfo ? format_string($cminfo->name) : '';
+    }
+
+    // --- Pass 2: build display rows. No queries in this loop. ---
+    $rows = [];
+    foreach ($rules as $rule) {
+        if (($rule->scope == 'activity' || $rule->scope == 'course') && empty($rule->scopeid)) {
+            continue;
+        }
+
+        $coursename = '';
+        $activityname = '';
+
+        if ($rule->scope == 'course' && $rule->scopeid) {
+            $coursename = isset($coursenames[$rule->scopeid]) ? $coursenames[$rule->scopeid]->fullname : '';
+        }
+
+        if ($rule->scope == 'activity' && $rule->scopeid && isset($cms[$rule->scopeid])) {
+            $cm = $cms[$rule->scopeid];
+            $coursename = isset($coursenames[$cm->course]) ? $coursenames[$cm->course]->fullname : '';
+            $activityname = $activitynames[$rule->scopeid] ?? '';
+        }
+
+        $delurl = new moodle_url('/local/leaderboard/manage_rules.php', [
+            'delete' => $rule->id,
+            'sesskey' => sesskey(),
+        ]);
+
+        $rows[] = [
+            'scope' => $rule->scope,
+            'scopeid' => (int) $rule->scopeid,
+            'coursename' => $coursename,
+            'activityname' => $activityname,
+            'activitytype' => $rule->activitytype,
+            'event' => $rule->event,
+            'points' => (int) $rule->points,
+            'deleteurl' => $delurl->out(false),
+        ];
+    }
+
+$data = [
+    'existingrulesstr' => get_string('existingrules', 'local_leaderboard'),
+    'rows' => $rows,
+    'hasrules' => !empty($rows),
+];
+
+echo $OUTPUT->render_from_template('local_leaderboard/rules_table', $data);
 echo $OUTPUT->footer();

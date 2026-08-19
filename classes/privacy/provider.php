@@ -15,13 +15,28 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package     local_leaderboard
- * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
+ * @copyright   2025 Rudraksh Batra <batra.rudraksh@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_leaderboard';
-$plugin->version   = 2024073000;
-$plugin->requires  = 2022041900;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0';
+namespace local_leaderboard\privacy;
+
+defined('MOODLE_INTERNAL') || die();
+
+use core_privacy\local\metadata\null_provider;
+
+/**
+ * Privacy provider for local_leaderboard.
+ */
+class provider implements null_provider {
+
+    /**
+     * Returns the reason why this plugin does not store any personal data.
+     *
+     * @return string
+     */
+    public static function get_reason(): string {
+        return 'privacy:metadata';
+    }
+}
+

@@ -12,6 +12,32 @@
     .lb-rank { font-family: monospace; }
 }
 
+#page-local-leaderboard-manage_level{
+
+    .filepicker-filelist{
+        width: 50% !important;
+    }
+    
+    .generaltable{
+        width: 80% !important;
+    }
+}
+.cleanfilter{
+    display: flex;
+    justify-content: center;
+    a{
+        text-decoration: none !important;
+    }
+}
+
+.headcleanfilteradmin{
+    display: flex;
+    justify-content: space-between;
+    
+    .cleanfilteradmin a{
+        text-decoration: none !important;
+    }
+}
 
 .togglesection{
 

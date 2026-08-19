@@ -1,0 +1,76 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_leaderboard/rules_table
+
+    Existing points rules table.
+
+    Context variables required for this template:
+    * hasrules - bool, whether there is at least one rule row.
+    * rows - array of rule rows, each with:
+        scope, scopeid, coursename, activityname, activitytype, event, points, deleteurl.
+
+    Example context (json):
+    {
+        "hasrules": true,
+        "rows": [
+            {
+                "scope": "course",
+                "scopeid": 2,
+                "coursename": "Sample course",
+                "activityname": "",
+                "activitytype": "quiz",
+                "event": "attempt_submitted",
+                "points": 10,
+                "deleteurl": "https://example.com/local/leaderboard/manage_rules.php?delete=1&sesskey=abc"
+            }
+        ]
+    }
+}}
+<h2>{{existingrulesstr}}</h2>
+
+{{#hasrules}}
+<table class="generaltable" style="background-color: #fff;">
+    <tr>
+        <th>Scope</th>
+        <th>ScopeID</th>
+        <th>Course</th>
+        <th>Activity</th>
+        <th>Activity Type</th>
+        <th>Event</th>
+        <th>Points</th>
+        <th>Actions</th>
+    </tr>
+    {{#rows}}
+    <tr>
+        <td>{{scope}}</td>
+        <td>{{scopeid}}</td>
+        <td>{{coursename}}</td>
+        <td>{{activityname}}</td>
+        <td>{{activitytype}}</td>
+        <td>{{event}}</td>
+        <td>{{points}}</td>
+        <td>
+            <a href="{{deleteurl}}" onclick="return confirm('Delete this rule?')">Delete</a>
+        </td>
+    </tr>
+    {{/rows}}
+</table>
+{{/hasrules}}
+{{^hasrules}}
+<p>No rules have been added yet.</p>
+{{/hasrules}}

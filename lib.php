@@ -31,3 +31,45 @@ function local_leaderboard_extends_navigation(global_navigation $nav) {
         );
     }
 }
+
+
+/**
+ * Serve level images stored in the 'levelimage' filearea through pluginfile.php.
+ *
+ * @param stdClass $course
+ * @param stdClass $cm
+ * @param context $context
+ * @param string $filearea
+ * @param array $args
+ * @param bool $forcedownload
+ * @param array $options
+ * @return bool false if file not served (Moodle sends 404 itself)
+ */
+function local_leaderboard_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    // This plugin stores level images at system context.
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        return false;
+    }
+
+    if ($filearea !== 'levelimage') {
+        return false;
+    }
+
+    // No login/capability gate here — level badge images are shown on a
+    // public-facing leaderboard. Tighten this with require_login()/
+    // require_capability() if that's not the case for your site.
+
+    $itemid = (int) array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'local_leaderboard', 'levelimage', $itemid, $filepath, $filename);
+
+    if (!$file || $file->is_directory()) {
+        send_file_not_found();
+    }
+
+    // Level images rarely change once uploaded; cache for a day.
+    send_stored_file($file, DAYSECS, 0, $forcedownload, $options);
+}

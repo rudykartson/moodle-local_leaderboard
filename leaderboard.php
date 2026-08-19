@@ -98,6 +98,7 @@ foreach ($levels as $level) {
 $data = [
     'isadmin' => $isadmin,
     'tabs' => $tabs,
+    'cleanpgurltxt' => get_string('cleanpgurltxt','local_leaderboard'),
     'globalurl' => 'leaderboard.php',
     'countryurl' => 'leaderboard.php?country=' . $USER->country,
     'is_country' => $is_country,

@@ -1,0 +1,84 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template local_leaderboard/levels_table
+
+    Existing levels/tiers table.
+
+    Context variables required for this template:
+    * haslevels - bool, whether there is at least one level row.
+    * existinglevelsstr, levelnamestr, minpointsstr, maxpointsstr, colorstr,
+      sortorderstr, actionsstr, editstr, deletestr, areyousuredeletestr - lang strings.
+    * rows - array of level rows, each with:
+        name, minpoints, maxpoints, color, sortorder, editurl, deleteurl.
+
+    Example context (json):
+    {
+        "haslevels": true,
+        "existinglevelsstr": "Existing Levels",
+        "levelnamestr": "Level name",
+        "minpointsstr": "Min points",
+        "maxpointsstr": "Max points",
+        "colorstr": "Color",
+        "sortorderstr": "Sort order",
+        "actionsstr": "Actions",
+        "editstr": "Edit",
+        "deletestr": "Delete",
+        "areyousuredeletestr": "Are you sure you want to delete this?",
+        "rows": [
+            {
+                "name": "Gold",
+                "minpoints": 100,
+                "maxpoints": 199,
+                "color": "#ffd700",
+                "sortorder": 1,
+                "editurl": "https://example.com/local/leaderboard/manage_level.php?edit=1",
+                "deleteurl": "https://example.com/local/leaderboard/manage_level.php?delete=1&sesskey=abc"
+            }
+        ]
+    }
+}}
+<h3>{{existinglevelsstr}}</h3>
+
+{{#haslevels}}
+<table class="generaltable" style="background-color: #fff;">
+    <tr>
+        <th>{{levelnamestr}}</th>
+        <th>{{minpointsstr}}</th>
+        <th>{{maxpointsstr}}</th>
+        <th>{{colorstr}}</th>
+        <th>{{sortorderstr}}</th>
+        <th>{{actionsstr}}</th>
+    </tr>
+    {{#rows}}
+    <tr>
+        <td>{{name}}</td>
+        <td>{{minpoints}}</td>
+        <td>{{maxpoints}}</td>
+        <td><span style="color:{{color}};font-weight:bold;">{{color}}</span></td>
+        <td>{{sortorder}}</td>
+        <td>
+            <a class="btn btn-primary" href="{{editurl}}">{{editstr}}</a>
+            <a class="btn btn-danger text-white" href="{{deleteurl}}" onclick="return confirm('{{areyousuredeletestr}}')">{{deletestr}}</a>
+        </td>
+    </tr>
+    {{/rows}}
+</table>
+{{/haslevels}}
+{{^haslevels}}
+<p>No levels have been added yet.</p>
+{{/haslevels}}

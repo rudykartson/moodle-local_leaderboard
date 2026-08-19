@@ -26,185 +26,88 @@ class local_leaderboard_rule_form extends moodleform {
         global $DB;
         $mform = $this->_form;
 
-        // Fetch course and activity data
+        // Fetch course and activity data.
         $courses = $DB->get_records_menu('course', null, 'fullname', 'id, fullname');
-        unset($courses[1]);
-        
+        unset($courses[SITEID]);
+
         $activitymap = [];
         $activitytypemap = [];
 
         foreach ($courses as $cid => $cname) {
             $modinfo = get_fast_modinfo($cid);
             foreach ($modinfo->get_cms() as $cm) {
-                if (!$cm->uservisible) continue;
+                if (!$cm->uservisible) {
+                    continue;
+                }
                 $activitymap[$cid][$cm->id] = $cm->name . " ({$cm->modname})";
                 $activitytypemap[$cm->id] = $cm->modname;
             }
         }
 
-        // Scope
+        // Scope.
         $mform->addElement('select', 'scope', 'Scope', [
             // 'platform' => 'Platform-wide',
             'course'   => 'Course',
-            'activity' => 'Activity'
+            'activity' => 'Activity',
         ], ['id' => 'id_scope']);
         $mform->setType('scope', PARAM_TEXT);
 
-        // Course
+        // Course.
         $mform->addElement('select', 'courseid', 'Course', [0 => '-- Select --'] + $courses, ['id' => 'id_courseid']);
         $mform->setType('courseid', PARAM_INT);
 
-        // Activity
+        // Activity.
         $mform->addElement('select', 'cmid', 'Activity', [0 => '-- Select --'], ['id' => 'id_cmid']);
         $mform->setType('cmid', PARAM_INT);
 
-        // Activity Type (readonly)
+        // Activity Type (readonly).
         $mform->addElement('text', 'activitytype', 'Activity Type', ['readonly' => 'readonly', 'id' => 'id_activitytype']);
         $mform->setType('activitytype', PARAM_TEXT);
 
-        // Event
+        // Event.
         $mform->addElement('select', 'event', 'Event', [
             'start' => 'Start/View',
-            'complete' => 'Complete'
+            'complete' => 'Complete',
         ]);
         $mform->setType('event', PARAM_TEXT);
 
-        // Points
+        // Points.
         $mform->addElement('text', 'points', 'Points');
         $mform->setType('points', PARAM_INT);
 
-
         $this->add_action_buttons();
 
-        // Inject JavaScript
-        $this->add_js($courses, $activitymap, $activitytypemap);
+        // Wire up the scope/course/activity cascade via the AMD module.
+        $this->add_js($activitymap, $activitytypemap);
     }
 
-    private function add_js($courses, $activitymap, $activitytypemap) {
+    /**
+     * Initialise the AMD module that drives the scope/course/activity selects.
+     *
+     * @param array $activitymap Map of course id => {cmid: "name (modname)"}.
+     * @param array $activitytypemap Map of cmid => modname.
+     */
+    private function add_js($activitymap, $activitytypemap) {
         global $PAGE;
 
-        $js_courses = json_encode($courses);
-        $js_activities = json_encode($activitymap);
-        $js_activitytypes = json_encode($activitytypemap);
-
-        $PAGE->requires->js_init_code("
-            (function() {
-                // Form elements
-                const scopeEl = document.getElementById('id_scope');
-                const courseEl = document.getElementById('id_courseid');
-                const cmidEl = document.getElementById('id_cmid');
-                const activityTypeEl = document.getElementById('id_activitytype');
-
-                // Preloaded data from PHP
-                const courses = $js_courses;
-                const activities = $js_activities;
-                const activitytypes = $js_activitytypes;
-
-                /**
-                 * Disable or enable a form element
-                 */
-                function setDisabled(el, disabled) {
-                    el.disabled = disabled;
-                    if (disabled) el.value = '0';
-                }
-
-                /**
-                 * Populate a select element with options
-                 */
-                function populateSelect(select, items) {
-                    select.innerHTML = '';
-                    const defaultOpt = document.createElement('option');
-                    defaultOpt.value = '0';
-                    defaultOpt.text = '-- Select --';
-                    select.appendChild(defaultOpt);
-
-                    for (const [val, label] of Object.entries(items)) {
-                        const opt = document.createElement('option');
-                        opt.value = val;
-                        opt.text = label;
-                        select.appendChild(opt);
-                    }
-                }
-
-                /**
-                 * Update the form inputs based on selected scope
-                 */
-                function updateFormFromScope() {
-                    const scope = scopeEl.value;
-
-                    if (scope === 'platform') {
-                        setDisabled(courseEl, true);
-                        setDisabled(cmidEl, true);
-                        populateSelect(cmidEl, {});
-                        activityTypeEl.value = '';
-                    } else if (scope === 'course') {
-                        setDisabled(courseEl, false);
-                        setDisabled(cmidEl, true);
-                        populateSelect(cmidEl, {});
-                        activityTypeEl.value = '';
-                    } else if (scope === 'activity') {
-                        setDisabled(courseEl, false);
-                        const selectedCourseId = courseEl.value;
-                        if (selectedCourseId && activities[selectedCourseId]) {
-                            populateSelect(cmidEl, activities[selectedCourseId]);
-                            setDisabled(cmidEl, false);
-                        } else {
-                            setDisabled(cmidEl, true);
-                            populateSelect(cmidEl, {});
-                        }
-                    }
-                }
-
-                /**
-                 * Update activity type when an activity is selected
-                 */
-                function updateActivityType() {
-                    const selectedCmid = cmidEl.value;
-                    activityTypeEl.value = activitytypes[selectedCmid] || '';
-                }
-
-                // Event listeners
-                scopeEl.addEventListener('change', () => {
-                    updateFormFromScope();
-                    updateActivityType();
-                });
-
-                courseEl.addEventListener('change', () => {
-                    if (scopeEl.value === 'activity') {
-                        const selectedCourseId = courseEl.value;
-                        if (activities[selectedCourseId]) {
-                            populateSelect(cmidEl, activities[selectedCourseId]);
-                            setDisabled(cmidEl, false);
-                        } else {
-                            setDisabled(cmidEl, true);
-                            populateSelect(cmidEl, {});
-                        }
-                    }
-                    updateActivityType();
-                });
-
-                cmidEl.addEventListener('change', () => {
-                    updateActivityType();
-                });
-
-                // Initialize on page load
-                updateFormFromScope();
-                updateActivityType();
-            })();
-        ");
+        $PAGE->requires->js_call_amd('local_leaderboard/rule_form', 'init', [
+            $activitymap,
+            $activitytypemap,
+        ]);
     }
 
     public function validation($data, $files) {
         global $DB;
+        $opcmid = optional_param('cmid', 0, PARAM_INT);
+
         $errors = parent::validation($data, $files);
-        $data['cmid'] = $_POST['cmid'];
+        $data['cmid'] = $opcmid;
 
         $levels = $DB->get_records('local_leaderboard_levels');
 
         if (empty($levels)) {
             $errors['points'] = 'Please create a Level/Tier first before proceeding..';
         }
-
 
         if ($data['scope'] === 'course' && (int)$data['courseid'] === 0) {
             $errors['courseid'] = 'You must select a course for this rule.';
@@ -214,7 +117,7 @@ class local_leaderboard_rule_form extends moodleform {
             if ((int)$data['courseid'] === 0) {
                 $errors['courseid'] = 'You must select a course for this rule.';
             }
-            if ((int)$data['cmid'] === 0) {
+            if ((int)$opcmid === 0) {
                 $errors['cmid'] = 'You must select an activity for this rule.';
             }
         }

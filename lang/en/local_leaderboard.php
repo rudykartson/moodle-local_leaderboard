@@ -21,10 +21,19 @@
 
 $string['pluginname'] = 'Leaderboard';
 $string['leaderboard'] = 'Leaderboard';
+$string['leaderboard:view'] = 'View leaderboard';
+$string['leaderboard:manage'] = 'Manage leaderboard';
 $string['manage'] = 'Leaderboard Points Rules';
 $string['levels'] = 'Leaderboard Levels/Tiers';
+$string['toprenker'] = 'Leaderboard Top 10';
+$string['add_pts_rule'] = 'Add Points Rule';
+$string['referralpnt'] = 'Referral Points';
+$string['referralpnt_msg'] = 'Referral user added reward points';
+$string['existingrules'] = 'Existing Points Rules';
 $string['points'] = 'Points';
 $string['level'] = 'Level/Tier';
+$string['levelup'] = 'Congratulations! You reached level {$a}!';
+$string['cleanpgurltxt'] = 'Clear Filter';
 $string['rank'] = 'Rank';
 $string['you'] = 'You';
 $string['country'] = 'Country';
@@ -59,3 +68,17 @@ $string['default_points_color_desc'] = 'Choose color for leaderboard points';
 
 $string['default_points_icon'] = 'Points Icon Names';
 $string['default_points_icon_desc'] = 'Add Points icon name from Font Awesome Icons';
+
+
+$string['referralsetup_heading'] = 'Referral points setup';
+$string['referralsetup_desc'] = 'To use the referral points functionality, you must first create a custom user profile field with the exact settings below. Referral points will not be calculated until this field exists.';
+$string['referralsetup_shortname'] = 'Short name';
+$string['referralsetup_type'] = 'Profil Type';
+$string['referralsetup_name'] = 'Name';
+$string['referralsetup_required'] = 'Is this field required';
+$string['referralsetup_locked'] = 'Is this field locked';
+$string['referralsetup_unique'] = 'Should the data be unique';
+$string['referralsetup_signup'] = 'Display on signup page';
+$string['referralsetup_visible'] = 'Who is this field visible to';
+$string['referralsetup_visible_everyone'] = 'Visible to everyone';
+$string['referralsetup_createlink'] = 'Create this profile field now';

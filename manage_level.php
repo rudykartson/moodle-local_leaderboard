@@ -23,13 +23,15 @@ require_once(__DIR__ . '/../../config.php');
 require_once(__DIR__ . '/forms/level_form.php');
 require_login();
 require_capability('local/leaderboard:manage', context_system::instance());
-
-$PAGE->set_context(context_system::instance());
+$context = context_system::instance();
+$PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/leaderboard/manage_level.php'));
 $PAGE->set_title(get_string('levels', 'local_leaderboard'));
 $PAGE->set_heading(get_string('levels', 'local_leaderboard'));
 
-global $DB;
+global $DB, $CFG;
+require_once($CFG->libdir . '/filelib.php');
+require_once($CFG->dirroot."/lib/filelib.php");
 
 // Delete level if requested
 if ($deleteid = optional_param('delete', 0, PARAM_INT)) {
@@ -62,106 +64,128 @@ $mform = new local_leaderboard_level_form(null, $customdata);
 if ($mform->is_cancelled()) {
     redirect('manage_level.php');
 } else if ($data = $mform->get_data()) {
-    $editid = $_POST['lid'];
-    $data->color = $_POST['color'];
-    $content = $mform->get_file_content('levelimage');
+    $clr = optional_param('color', '#778899', PARAM_TEXT);
+    $data->color = $clr;
 
-    if($content){
-        $filen = $mform->get_new_filename('levelimage');
-        $filename = "img_".bin2hex(random_bytes(8))."".$filen;
-        $destination = __DIR__ . '/assets/' . $filename; 
+    $editid = $data->lid;
 
-        if ($content && $filename) {
-            $dir = dirname($destination);
-            if (!file_exists($dir)) {
-                mkdir($dir, 0777, true);
-            }
+    $fileoptions = [
+        'subdirs' => 0,
+        'maxbytes' => 10485760,
+        'maxfiles' => 1,
+        'accepted_types' => ['.png'],
+    ];
 
-            if (! file_put_contents($destination, $content)) {
-                throw new moodle_exception('Failed to save the file');
-            }
-        }
-    }
-    
+    if ($editid > 0) {
 
-    if($editid > 0){
+        $imageitemid = $DB->get_record('files', ['itemid'=>$data->levelimage]);
 
-        $level = (object)[ 
+        // --- Update existing level. ---
+        $level = (object) [
             'id' => $editid,
             'name' => $data->name,
-            'min_points' => (int)$data->min_points,
-            'max_points' => (int)$data->max_points,
+            'min_points' => (int) $data->min_points,
+            'max_points' => (int) $data->max_points,
             'color' => $data->color,
-            'sortorder' => (int)$data->sortorder
+            'sortorder' => (int) $data->sortorder,
+            'img' => $imageitemid ? $editid : "", // Itemid == record id, by convention.
         ];
-
-
-        if (!empty($filename)) {
-            if($editimg = $DB->get_record('local_leaderboard_levels', ['id' => $editid])){
-                $imgpath = __DIR__ . '/assets/' . $editimg->img;
-                if (file_exists($imgpath)) {
-                    unlink($imgpath);
-                }
-            }
-            $level->img = $filename;
-        }else{
-            if($editimg = $DB->get_record('local_leaderboard_levels', ['id' => $editid])){
-                $level->img = $editimg->img ?? '';
-            }
-
-        }
 
         $DB->update_record('local_leaderboard_levels', $level);
 
+        // file_save_draft_area_files reconciles added/removed files on its
+        // own — replacing the old png with the new one automatically.
+        // No manual unlink() needed.
+        file_save_draft_area_files(
+            $data->levelimage,
+            $context->id,
+            'local_leaderboard',
+            'levelimage',
+            $editid,
+            $fileoptions
+        );
 
-    }else{
-
-        $level = (object)[ 
+    } else {
+        // --- Insert new level. ---
+        $level = (object) [
             'name' => $data->name,
-            'min_points' => (int)$data->min_points,
-            'max_points' => (int)$data->max_points,
+            'min_points' => (int) $data->min_points,
+            'max_points' => (int) $data->max_points,
             'color' => $data->color,
-            'img' => $filename ?? "",
-            'sortorder' => (int)$data->sortorder
+            'sortorder' => (int) $data->sortorder,
+            'img' => 0, // Placeholder — record id isn't known yet.
         ];
-        $DB->insert_record('local_leaderboard_levels', $level);
-    }
-    
-    redirect('manage_level.php', get_string('addnewlevel', 'local_leaderboard'), 2);
 
+        $newid = $DB->insert_record('local_leaderboard_levels', $level);
+
+        // Now that we have the record's id, use it as the file area itemid.
+        file_save_draft_area_files(
+            $data->levelimage,
+            $context->id,
+            'local_leaderboard',
+            'levelimage',
+            $newid,
+            $fileoptions
+        );
+
+        $DB->set_field('local_leaderboard_levels', 'img', $newid, ['id' => $newid]);
+    }
+
+    redirect(
+        new moodle_url('/local/leaderboard/manage_level.php'),
+        get_string('addnewlevel', 'local_leaderboard'),
+        2
+    );
 }
 
 echo $OUTPUT->header();
-echo '<div class="relatebtn"><a href="manage_rules.php" class="btn btn-primary" >Manage Rules</a></div>';
+echo html_writer::div(
+    html_writer::link(
+        new moodle_url('/local/leaderboard/manage_rules.php'),
+        'Manage Rules',
+        ['class' => 'btn btn-primary']
+    ),
+    'relatebtn'
+);
 echo html_writer::tag('h3', get_string('addnewlevel', 'local_leaderboard'));
 $mform->display();
 
-// Show existing levels/tiers
+// Show existing levels/tiers.
 $levels = $DB->get_records('local_leaderboard_levels', null, 'sortorder');
-echo html_writer::tag('h3', get_string('existinglevels', 'local_leaderboard'));
-echo '<table class="generaltable" style="background-color: #fff;"><tr>
-<th>'.get_string('levelname', 'local_leaderboard').'</th>
-<th>'.get_string('minpoints', 'local_leaderboard').'</th>
-<th>'.get_string('maxpoints', 'local_leaderboard').'</th>
-<th>'.get_string('color', 'local_leaderboard').'</th>
-<th>'.get_string('sortorder', 'local_leaderboard').'</th>
-<th>'.get_string('actions', 'local_leaderboard').'</th>
-</tr>';
 
+$rows = [];
 foreach ($levels as $level) {
-    $delurl = new moodle_url('/local/leaderboard/manage_level.php', ['delete' => $level->id, 'sesskey' => sesskey()]);
+    $delurl = new moodle_url('/local/leaderboard/manage_level.php', [
+        'delete' => $level->id,
+        'sesskey' => sesskey(),
+    ]);
     $editurl = new moodle_url('/local/leaderboard/manage_level.php', ['edit' => $level->id]);
-    echo '<tr>';
-    echo '<td>' . s($level->name) . '</td>';
-    echo '<td>' . (int)$level->min_points . '</td>';
-    echo '<td>' . (int)$level->max_points . '</td>';
-    echo '<td><span style="color:'.s($level->color).';font-weight:bold;">'.s($level->color).'</span></td>';
-    echo '<td>' . (int)$level->sortorder . '</td>';
-    echo '<td>
-      <a class="btn btn-primary" href="' . $editurl . '" >'.get_string('edit', 'local_leaderboard').'</a>
-      <a class="btn btn-danger text-white" href="' . $delurl . '" onclick="return confirm(\''.get_string('areyousuredelete', 'local_leaderboard').'\')">'.get_string('delete', 'local_leaderboard').'</a>
-      </td>';
-    echo '</tr>';
+
+    $rows[] = [
+        'name' => $level->name,
+        'minpoints' => (int) $level->min_points,
+        'maxpoints' => (int) $level->max_points,
+        'color' => $level->color,
+        'sortorder' => (int) $level->sortorder,
+        'editurl' => $editurl->out(false),
+        'deleteurl' => $delurl->out(false),
+    ];
 }
-echo '</table>';
+
+$data = [
+    'existinglevelsstr' => get_string('existinglevels', 'local_leaderboard'),
+    'levelnamestr' => get_string('levelname', 'local_leaderboard'),
+    'minpointsstr' => get_string('minpoints', 'local_leaderboard'),
+    'maxpointsstr' => get_string('maxpoints', 'local_leaderboard'),
+    'colorstr' => get_string('color', 'local_leaderboard'),
+    'sortorderstr' => get_string('sortorder', 'local_leaderboard'),
+    'actionsstr' => get_string('actions', 'local_leaderboard'),
+    'editstr' => get_string('edit', 'local_leaderboard'),
+    'deletestr' => get_string('delete', 'local_leaderboard'),
+    'areyousuredeletestr' => get_string('areyousuredelete', 'local_leaderboard'),
+    'rows' => $rows,
+    'haslevels' => !empty($rows),
+];
+
+echo $OUTPUT->render_from_template('local_leaderboard/levels_table', $data);
 echo $OUTPUT->footer();
