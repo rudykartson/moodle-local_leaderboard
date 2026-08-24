@@ -17,7 +17,7 @@
  * @package     local_leaderboard
  * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+ */ 
 
 namespace local_leaderboard;
 
@@ -30,28 +30,43 @@ class api {
      */
     public static function find_points_rule($cmid, $courseid, $activitytype, $event) {
         global $DB;
-        
-        // echo '<pre>------';
-        // print_r([$cmid, $courseid, $activitytype, $event]);
-        // die;
-        
-        // Activity level rule (most specific)
-        $rule = $DB->get_record('local_leaderboard_rules', [
-            'scope' => 'activity', 'scopeid' => $cmid, 'activitytype' => $activitytype, 'event' => $event
-        ]);
-        if ($rule) return $rule;
 
-        // Course level
-        $rule = $DB->get_record('local_leaderboard_rules', [
-            'scope' => 'course', 'scopeid' => $courseid, 'activitytype' => $activitytype, 'event' => $event
-        ]);
-        if ($rule) return $rule;
+        // Activity level rule.
+        // Only query when CMID and activity type are available.
+        if (!empty($cmid) && is_numeric($cmid) && !empty($activitytype)) {
+            $rule = $DB->get_record('local_leaderboard_rules', [
+                'scope' => 'activity',
+                'scopeid' => (int)$cmid,
+                'activitytype' => $activitytype,
+                'event' => $event
+            ]);
 
-        // Platform level (scopeid = 0)
-        $rule = $DB->get_record('local_leaderboard_rules', [
-            'scope' => 'platform', 'scopeid' => 0, 'activitytype' => $activitytype, 'event' => $event
+            if ($rule) {
+                return $rule;
+            }
+        }
+
+        // Course level rule.
+        if (!empty($courseid) && is_numeric($courseid)) {
+            $rule = $DB->get_record('local_leaderboard_rules', [
+                'scope' => 'course',
+                'scopeid' => (int)$courseid,
+                'activitytype' => $activitytype,
+                'event' => $event
+            ]);
+
+            if ($rule) {
+                return $rule;
+            }
+        }
+
+        // Platform level rule.
+        return $DB->get_record('local_leaderboard_rules', [
+            'scope' => 'platform',
+            'scopeid' => 0,
+            'activitytype' => $activitytype,
+            'event' => $event
         ]);
-        return $rule;
     }
 
     /**

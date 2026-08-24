@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
  * @package     local_leaderboard
- * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
+ * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com> 
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -84,7 +84,7 @@ class observer {
 
     }
 
-     /**
+    /**
      * Called when a course is viewed.
      */
     public static function course_viewed(\core\event\course_viewed $event) {
@@ -92,12 +92,14 @@ class observer {
 
         $courseid = $event->courseid;
         $userid = $event->userid;
-        $event = 'start';
-        $activitytype = '';
-        $cmid = '';
-        $rule = api::find_points_rule($cmid, $courseid, $activitytype, $event);
+        $eventname = 'start';
+        $activitytype = null;
+        $cmid = null;
 
-        $assignpoint = $DB->get_record('local_leaderboard_points',["userid"=>$userid,"courseid"=>$courseid,'cmid' => "",'event' => $event]);
+        $rule = api::find_points_rule($cmid, $courseid, $activitytype, $eventname);
+
+
+        $assignpoint = $DB->get_record('local_leaderboard_points',["userid"=>$userid,"courseid"=>$courseid,'cmid' => $cmid,'event' => $eventname]);
         if(!$assignpoint){
              if ($rule && $rule->points > 0) {
                 $DB->insert_record('local_leaderboard_points', [
@@ -105,7 +107,7 @@ class observer {
                     'courseid' => $courseid,
                     'cmid' => $cmid,
                     'points' => $rule->points,
-                    'event' => $event,
+                    'event' => $eventname,
                     'timecreated' => time(),
                 ]);
             }

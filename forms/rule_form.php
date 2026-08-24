@@ -19,7 +19,10 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 require_once($CFG->libdir.'/formslib.php');
+require_login();
+require_capability('local/leaderboard:manage', context_system::instance());
 
 class local_leaderboard_rule_form extends moodleform {
     public function definition() {
