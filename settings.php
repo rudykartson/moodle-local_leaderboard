@@ -41,7 +41,7 @@ if ($hassiteconfig) {
         'local_leaderboard/defaultcertpointscolor',
         get_string('default_points_color', 'local_leaderboard'),
         get_string('default_points_color_desc', 'local_leaderboard'),
-        '#fb0'
+        get_string('default_points_color_code', 'local_leaderboard'),
     ));
 
     // Icon setting (let admin enter an icon class name, e.g., 'fa fa-star').
@@ -49,15 +49,14 @@ if ($hassiteconfig) {
         'local_leaderboard/defaultpointsicon',
         get_string('default_points_icon', 'local_leaderboard'),
         get_string('default_points_icon_desc', 'local_leaderboard'),
-        'fa fa-star' // default icon class
+        get_string('default_points_icon_name', 'local_leaderboard'),
     ));
     
-    // Icon setting (let admin enter an icon class name, e.g., 'fa fa-star').
     $settings->add(new admin_setting_configtext(
         'local_leaderboard/referralpoints',
         get_string('referralpnt','local_leaderboard'),
         get_string('referralpnt_msg','local_leaderboard'),
-        '10' // default icon class
+        get_string('defaultreferralpoints', 'local_leaderboard') 
     ));
 
     // Add the settings page under the plugin's category.

@@ -162,5 +162,6 @@ $templatecontext['toggle_country_url'] = $countryurl->out();
  
 
 echo $OUTPUT->header();
+
 echo $OUTPUT->render_from_template('local_leaderboard/leaderboard', $templatecontext);
 echo $OUTPUT->footer();

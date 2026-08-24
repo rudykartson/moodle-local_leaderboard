@@ -23,16 +23,23 @@ $string['pluginname'] = 'Leaderboard';
 $string['leaderboard'] = 'Leaderboard';
 $string['leaderboard:view'] = 'View leaderboard';
 $string['leaderboard:manage'] = 'Manage leaderboard';
+$string['privacy:metadata:local_leaderboard_points'] = 'Leaderboard stores user points and related information.';
+$string['privacy:metadata:local_leaderboard_points:userid'] = 'User ID of the user whose points are stored.';
+$string['privacy:metadata:local_leaderboard_points:courseid'] = 'ID of the course to which the points belong.';
+$string['privacy:metadata:local_leaderboard_points:cmid'] = 'ID of the course module to which the points belong.';
+$string['privacy:metadata:local_leaderboard_points:points'] = 'The points awarded to the user.';
+$string['privacy:metadata:local_leaderboard_points:event'] = 'The event stores the trigger status — either started or completed — that triggered the point award.';
+$string['privacy:metadata:local_leaderboard_points(timecreated'] = 'The time when the points were created.';
 $string['manage'] = 'Leaderboard Points Rules';
 $string['levels'] = 'Leaderboard Levels/Tiers';
 $string['toprenker'] = 'Leaderboard Top 10';
 $string['add_pts_rule'] = 'Add Points Rule';
 $string['referralpnt'] = 'Referral Points';
 $string['referralpnt_msg'] = 'Referral user added reward points';
+$string['defaultreferralpoints'] = '10';
 $string['existingrules'] = 'Existing Points Rules';
 $string['points'] = 'Points';
 $string['level'] = 'Level/Tier';
-$string['levelup'] = 'Congratulations! You reached level {$a}!';
 $string['cleanpgurltxt'] = 'Clear Filter';
 $string['rank'] = 'Rank';
 $string['you'] = 'You';
@@ -65,9 +72,11 @@ $string['exportcsv'] = 'Export CSV';
 
 $string['default_points_color'] = 'Points Color Code';
 $string['default_points_color_desc'] = 'Choose color for leaderboard points';
+$string['default_points_color_code'] = '#fb0';
 
 $string['default_points_icon'] = 'Points Icon Names';
 $string['default_points_icon_desc'] = 'Add Points icon name from Font Awesome Icons';
+$string['default_points_icon_name'] = 'fa fa-star';
 
 
 $string['referralsetup_heading'] = 'Referral points setup';

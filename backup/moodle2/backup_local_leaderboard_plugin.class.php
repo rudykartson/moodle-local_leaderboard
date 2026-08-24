@@ -18,11 +18,24 @@
  * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_leaderboard';
-$plugin->version   = 2024072917;
-$plugin->requires  = 2022041900;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0';
-$plugin->license = 'GPL v3 or later';
+class backup_local_leaderboard_plugin extends backup_local_plugin {
+    protected function define_module_plugin_structure() {
+        $plugin = $this->get_plugin_element(null, $this->get_task()->get_id(), 'points');
+        $wrapper = new backup_nested_element($this->get_recommended_name());
+        $plugin->add_child($wrapper);
+
+        $points = new backup_nested_element('points_list');
+        $point = new backup_nested_element('point', ['id'],
+            ['userid', 'courseid', 'cmid', 'points', 'event', 'timecreated']);
+
+        $wrapper->add_child($points);
+        $points->add_child($point);
+
+        // Tie this to the current module context being backed up.
+        $point->set_source_table('local_leaderboard_points', ['cmid' => backup::VAR_MODID]);
+        $point->annotate_ids('user', 'userid');
+
+        return $plugin;
+    }
+}

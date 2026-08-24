@@ -60,7 +60,7 @@ class api {
     public static function get_user_points($userid) {
         global $DB;
         $refcode = 'refusrid'.$userid;
-        $refuser = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM mdl_user_info_data uid JOIN mdl_user_info_field uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=>"refuserid","uidata"=>$refcode]);
+        $refuser = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM {user_info_data} uid JOIN {user_info_field} uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=>"refuserid","uidata"=>$refcode]);
         
         $sum = $DB->get_field_sql("SELECT SUM(points) FROM {local_leaderboard_points} WHERE userid = ?", [$userid]);
         

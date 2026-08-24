@@ -18,11 +18,18 @@
  * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'local_leaderboard';
-$plugin->version   = 2024072917;
-$plugin->requires  = 2022041900;
-$plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.0';
-$plugin->license = 'GPL v3 or later';
+class restore_local_leaderboard_plugin extends restore_local_plugin {
+    protected function define_module_plugin_structure() {
+        return [new restore_path_element('point', $this->get_pathfor('/points_list/point'))];
+    }
+
+    public function process_point($data) {
+        global $DB;
+        $data = (object) $data;
+        $data->userid   = $this->get_mappingid('user', $data->userid);
+        $data->courseid = $this->task->get_courseid();   // new courseid
+        $data->cmid     = $this->task->get_moduleid();   // new cmid
+        $DB->insert_record('local_leaderboard_points', $data);
+    }
+}
