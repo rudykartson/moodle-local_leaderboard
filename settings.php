@@ -19,8 +19,13 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-
 defined('MOODLE_INTERNAL') || die();
+
+// Technical identifiers (NOT translatable — must match the exact profile
+// field shortname/name configured in Moodle, so they stay as constants
+// rather than get_string() calls).
+define('LOCAL_LEADERBOARD_REFERRAL_FIELD_SHORTNAME', 'refuserid');
+define('LOCAL_LEADERBOARD_REFERRAL_FIELD_NAME', 'Refuserid');
 
 if ($hassiteconfig) {
 
@@ -51,12 +56,12 @@ if ($hassiteconfig) {
         get_string('default_points_icon_desc', 'local_leaderboard'),
         get_string('default_points_icon_name', 'local_leaderboard'),
     ));
-    
+
     $settings->add(new admin_setting_configtext(
         'local_leaderboard/referralpoints',
-        get_string('referralpnt','local_leaderboard'),
-        get_string('referralpnt_msg','local_leaderboard'),
-        get_string('defaultreferralpoints', 'local_leaderboard') 
+        get_string('referralpnt', 'local_leaderboard'),
+        get_string('referralpnt_msg', 'local_leaderboard'),
+        get_string('defaultreferralpoints', 'local_leaderboard')
     ));
 
     // Add the settings page under the plugin's category.
@@ -77,54 +82,58 @@ if ($hassiteconfig) {
         'local/leaderboard:manage'
     ));
 
+    // ------------------------------------------------------------------
+    // Referral points setup instructions.
+    // ------------------------------------------------------------------
+    $referralinfo = html_writer::start_tag('div', ['class' => 'alert alert-info']);
 
+    $referralinfo .= html_writer::tag('p',
+        get_string('referralsetup_desc', 'local_leaderboard'));
 
+    $referralinfo .= html_writer::start_tag('ul');
     
-        // ------------------------------------------------------------------
-        // Referral points setup instructions.
-        // ------------------------------------------------------------------
-        $referralinfo = html_writer::start_tag('div', ['class' => 'alert alert-info']);
-        
-        $referralinfo .= html_writer::tag('p',
-            get_string('referralsetup_desc', 'local_leaderboard'));
-    
-        $referralinfo .= html_writer::start_tag('ul');
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_type', 'local_leaderboard') . ': <code>Text Input</code>');
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_shortname', 'local_leaderboard') . ': <code>refuserid</code>');
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_name', 'local_leaderboard') . ': <code>Refuserid</code>');
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_required', 'local_leaderboard') . ': ' .
-            get_string('no'));
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_locked', 'local_leaderboard') . ': ' .
-            get_string('no'));
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_unique', 'local_leaderboard') . ': ' .
-            get_string('no'));
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_signup', 'local_leaderboard') . ': ' .
-            get_string('yes'));
-        $referralinfo .= html_writer::tag('li',
-            get_string('referralsetup_visible', 'local_leaderboard') . ': ' .
-            get_string('referralsetup_visible_everyone', 'local_leaderboard'));
-        $referralinfo .= html_writer::end_tag('ul');
-    
-        $referralinfo .= html_writer::tag('p',
-            html_writer::link(
-                new moodle_url('/user/profile/index.php'),
-                get_string('referralsetup_createlink', 'local_leaderboard')
-            )
-        );
-        $referralinfo .= html_writer::end_tag('div');
-    
-        $settings->add(new admin_setting_heading(
-            'local_leaderboard/referralsetup',
-            get_string('referralsetup_heading', 'local_leaderboard'),
-            $referralinfo
-        ));
-    
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_type', 'local_leaderboard',
+            html_writer::tag('code', get_string('referralsetup_fieldtype_text', 'local_leaderboard'))));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_shortname', 'local_leaderboard',
+            html_writer::tag('code', LOCAL_LEADERBOARD_REFERRAL_FIELD_SHORTNAME)));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_name', 'local_leaderboard',
+            html_writer::tag('code', LOCAL_LEADERBOARD_REFERRAL_FIELD_NAME)));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_required', 'local_leaderboard', get_string('no')));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_locked', 'local_leaderboard', get_string('no')));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_unique', 'local_leaderboard', get_string('no')));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_signup', 'local_leaderboard', get_string('yes')));
+
+    $referralinfo .= html_writer::tag('li',
+        get_string('referralsetup_visible', 'local_leaderboard',
+            get_string('referralsetup_visible_everyone', 'local_leaderboard')));
+
+    $referralinfo .= html_writer::end_tag('ul');
+
+    $referralinfo .= html_writer::tag('p',
+        html_writer::link(
+            new moodle_url('/user/profile/index.php'),
+            get_string('referralsetup_createlink', 'local_leaderboard')
+        )
+    );
+    $referralinfo .= html_writer::end_tag('div');
+
+    $settings->add(new admin_setting_heading(
+        'local_leaderboard/referralsetup',
+        get_string('referralsetup_heading', 'local_leaderboard'),
+        $referralinfo
+    ));
 
 }

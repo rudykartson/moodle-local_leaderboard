@@ -21,15 +21,21 @@
 
 require_once(__DIR__ . '/../../config.php');
 require_login();
-global $DB,$CFG,$USER;
+global $DB, $CFG, $USER;
 
 $context = context_system::instance();
-require_capability('local/leaderboard:view', $context);
+require_capability('local/leaderboard:manage', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/leaderboard/leaderboard.php'));
 $PAGE->set_title(get_string('leaderboard', 'local_leaderboard'));
 // $PAGE->set_heading(get_string('leaderboard', 'local_leaderboard'));
+
+// Constants for default/fallback values (previously hardcoded inline).
+define('LOCAL_LEADERBOARD_DEFAULT_TIER_COLOR', '#eee');
+define('LOCAL_LEADERBOARD_DEFAULT_ICON', 'fa fa-star');
+define('LOCAL_LEADERBOARD_DEFAULT_COLOR', '#fb0');
+define('LOCAL_LEADERBOARD_WHITE_COLOR', '#ffffff');
 
 // Admin settings gear (for admins only)
 $isadmin = has_capability('local/leaderboard:manage', $context);
@@ -46,7 +52,9 @@ $is_country = ($filter_country === $USER->country); // or whatever logic you use
 // Get levels
 $levels = \local_leaderboard\api::get_levels();
 $levelsbyid = [];
-foreach ($levels as $l) $levelsbyid[$l->id] = $l;
+foreach ($levels as $l) {
+    $levelsbyid[$l->id] = $l;
+}
 
 // Leaderboard (top 100, global or filtered)
 $leaderboard = \local_leaderboard\api::get_leaderboard(
@@ -57,12 +65,13 @@ $leaderboard = \local_leaderboard\api::get_leaderboard(
 $userpoints = \local_leaderboard\api::get_user_points($userid);
 $userlevel = \local_leaderboard\api::get_user_level($userid);
 
- $colorcode = get_config('local_leaderboard', 'defaultcertpointscolor');
- $icon = get_config('local_leaderboard', 'defaultpointsicon');
+$colorcode = get_config('local_leaderboard', 'defaultcertpointscolor');
+$icon = get_config('local_leaderboard', 'defaultpointsicon');
 
-
-$rank = 1; $userrank = null;
-$rows = []; $i = 1;
+$rank = 1;
+$userrank = null;
+$rows = [];
+$i = 1;
 
 foreach ($leaderboard as $u) {
     $tier = $levelsbyid[$u->levelid] ?? null;
@@ -72,21 +81,25 @@ foreach ($leaderboard as $u) {
         'isuser' => ($u->id == $userid),
         'hastier' => (bool) $tier,
         'tiername' => $tier ? format_string($tier->name) : '',
-        'tiercolor' => ($tier && $tier->color) ? $tier->color : '#eee',
+        'tiercolor' => ($tier && $tier->color) ? $tier->color : LOCAL_LEADERBOARD_DEFAULT_TIER_COLOR,
         'totalpoints' => (int) $u->totalpoints,
     ];
     $i++;
-
 }
 
 foreach ($leaderboard as $u) {
-    if ($u->id == $userid) { $userrank = $rank; break; }
+    if ($u->id == $userid) {
+        $userrank = $rank;
+        break;
+    }
     $rank++;
-
 }
 
-$tabs = [['name' => 'All Levels', 'active' => !$filter_levelid,
-    'url' => '?' . ($filter_country ? 'country=' . urlencode($filter_country) . '&' : '')]];
+$tabs = [[
+    'name' => get_string('alllevels', 'local_leaderboard'),
+    'active' => !$filter_levelid,
+    'url' => '?' . ($filter_country ? 'country=' . urlencode($filter_country) . '&' : ''),
+]];
 foreach ($levels as $level) {
     $tabs[] = [
         'name' => format_string($level->name),
@@ -98,17 +111,19 @@ foreach ($levels as $level) {
 $data = [
     'isadmin' => $isadmin,
     'tabs' => $tabs,
-    'cleanpgurltxt' => get_string('cleanpgurltxt','local_leaderboard'),
+    'cleanpgurltxt' => get_string('cleanpgurltxt', 'local_leaderboard'),
     'globalurl' => 'leaderboard.php',
     'countryurl' => 'leaderboard.php?country=' . $USER->country,
     'is_country' => $is_country,
-    'userrank' => $userrank ?: '-',
-    'userlevelname' => $userlevel ? format_string($userlevel->name) : '—',
-    'userlevelcolor' => ($userlevel && $userlevel->color) ? $userlevel->color : '#eee',
+    'userrank' => $userrank ?: get_string('norank', 'local_leaderboard'),
+    'userlevelname' => $userlevel ? format_string($userlevel->name) : get_string('nolevel', 'local_leaderboard'),
+    'userlevelcolor' => ($userlevel && $userlevel->color) ? $userlevel->color : LOCAL_LEADERBOARD_DEFAULT_TIER_COLOR,
     'userpoints' => $userpoints,
     'pointsstring' => get_string('points', 'local_leaderboard'),
-    'icon' => $icon ?: 'fa fa-star',
-    'usercolorcode' => ($colorcode != '#ffffff' && !empty($colorcode)) ? $colorcode : '#fb0',
+    'icon' => $icon ?: LOCAL_LEADERBOARD_DEFAULT_ICON,
+    'usercolorcode' => ($colorcode != LOCAL_LEADERBOARD_WHITE_COLOR && !empty($colorcode))
+        ? $colorcode
+        : LOCAL_LEADERBOARD_DEFAULT_COLOR,
     'rows' => $rows,
     'hasrows' => !empty($rows),
 ];

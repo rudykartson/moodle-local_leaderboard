@@ -22,16 +22,23 @@
 require(__DIR__ . '/../../config.php');
 require_login();
 global $DB, $CFG, $USER, $PAGE, $OUTPUT;
-// require_capability('local/leaderboard:view', context_system::instance());
+require_capability('local/leaderboard:view', context_system::instance());
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot."/lib/filelib.php");
+require_once($CFG->dirroot.'/local/leaderboard/classes/api.php');
+
+// Constants for default/fallback values (previously hardcoded inline).
+define('LOCAL_LEADERBOARD_DEFAULT_ICON', 'fa fa-star');
+define('LOCAL_LEADERBOARD_DEFAULT_COLOR', '#fb0');
+define('LOCAL_LEADERBOARD_WHITE_COLOR', '#ffffff');
+define('LOCAL_LEADERBOARD_IMG_PATH_PREFIX', 'assets/img');
+define('LOCAL_LEADERBOARD_IMG_PATH_SUFFIX', '.png');
+
 $context = context_system::instance();
 $PAGE->set_context($context);
 $PAGE->set_url(new moodle_url('/local/leaderboard/index.php'));
-$PAGE->set_title(get_string('toprenker','local_leaderboard'));
-$PAGE->set_heading(get_string('toprenker','local_leaderboard'));
-
-require_once($CFG->dirroot.'/local/leaderboard/classes/api.php');
+$PAGE->set_title(get_string('toprenker', 'local_leaderboard'));
+$PAGE->set_heading(get_string('toprenker', 'local_leaderboard'));
 
 $userid = $USER->id;
 $filter_levelid = optional_param('levelid', 0, PARAM_INT);
@@ -40,13 +47,19 @@ $filter_country = optional_param('country', '', PARAM_ALPHA);
 // Get all levels/tiers
 $levels = \local_leaderboard\api::get_levels();
 $levelsbyid = [];
-foreach ($levels as $l) $levelsbyid[$l->id] = $l;
+foreach ($levels as $l) {
+    $levelsbyid[$l->id] = $l;
+}
 
 // Toggle for global/country
 $is_country = !empty($filter_country);
 $filters = [];
-if ($is_country) $filters['country'] = $USER->country;
-if ($filter_levelid) $filters['levelid'] = $filter_levelid;
+if ($is_country) {
+    $filters['country'] = $USER->country;
+}
+if ($filter_levelid) {
+    $filters['levelid'] = $filter_levelid;
+}
 
 // Leaderboard
 $leaderboard = \local_leaderboard\api::get_leaderboard($filters, 10);
@@ -71,14 +84,14 @@ $progress_pct = 0;
 if ($userlevel && $nextlevel) {
     $range = $nextlevel->min_points - $userlevel->min_points;
     $progress_pct = $range ? round(100 * ($userpoints - $userlevel->min_points) / $range) : 100;
-} elseif ($userlevel && !$nextlevel) {
+} else if ($userlevel && !$nextlevel) {
     $progress_pct = 100;
 }
 
 // Prepare data for Mustache
 $tiers = [];
 foreach ($levels as $key => $level) {
-    if($level->img){
+    if ($level->img) {
 
         $fs = get_file_storage();
 
@@ -105,8 +118,8 @@ foreach ($levels as $key => $level) {
         }
         $img = $imageurl;
 
-    }else{
-        $img = "assets/img".($key - 1).".png";
+    } else {
+        $img = LOCAL_LEADERBOARD_IMG_PATH_PREFIX . ($key - 1) . LOCAL_LEADERBOARD_IMG_PATH_SUFFIX;
     }
     $tiers[] = [
         'id' => $level->id,
@@ -116,10 +129,27 @@ foreach ($levels as $key => $level) {
         'color' => $level->color,
     ];
 }
- $colorcode = get_config('local_leaderboard', 'defaultcertpointscolor');
-//  echo $colorcode;
-//  die;
- $icon = get_config('local_leaderboard', 'defaultpointsicon');
+
+$colorcode = get_config('local_leaderboard', 'defaultcertpointscolor');
+$icon = get_config('local_leaderboard', 'defaultpointsicon');
+
+$pointslabel = get_string('points', 'local_leaderboard');
+$displayicon = $icon ? $icon : LOCAL_LEADERBOARD_DEFAULT_ICON;
+$displaycolor = ($colorcode != LOCAL_LEADERBOARD_WHITE_COLOR && !empty($colorcode)) ? $colorcode : LOCAL_LEADERBOARD_DEFAULT_COLOR;
+
+/**
+ * Build the HTML markup for a points badge.
+ *
+ * @param string $iconclass FontAwesome icon class to use.
+ * @param string $color Colour (hex) for the icon.
+ * @param int $points Number of points to display.
+ * @param string $label Localised "Points" label.
+ * @return string
+ */
+function local_leaderboard_render_points_badge($iconclass, $color, $points, $label) {
+    return '<i class="' . $iconclass . '" style="color: ' . $color . ';"></i> ' . $points . ' ' . $label;
+}
+
 $users = [];
 $rank = 1;
 foreach ($leaderboard as $u) {
@@ -129,24 +159,26 @@ foreach ($leaderboard as $u) {
     $users[] = [
         'rank' => sprintf('%02d', $rank++),
         'name' => fullname($u),
-        'points' => '<i class="'.($icon ? $icon :'fa fa-star').'" style="color: '. (($colorcode != "#ffffff" && !empty($colorcode)) ? $colorcode : "#fb0") .'"></i> '.$u->totalpoints.' Points',
+        'points' => local_leaderboard_render_points_badge($displayicon, $displaycolor, $u->totalpoints, $pointslabel),
         'country' => isset($u->country) ? $u->country : '',  // ensure your query returns this
-        'tier' => $user_tier ? $user_tier->name : '-',
+        'tier' => $user_tier ? $user_tier->name : get_string('notier', 'local_leaderboard'),
         'is_you' => $is_you,
     ];
 }
 $first_five_users = array_slice($users, 0, 10);
 $templatecontext = [
     'pgurl' => $PAGE->url,
-    'cleanpgurltxt' => get_string('cleanpgurltxt','local_leaderboard'),
+    'cleanpgurltxt' => get_string('cleanpgurltxt', 'local_leaderboard'),
     'tiers' => $tiers,
     'users' => $first_five_users,
-    'user_rank' => array_search(true, array_column($first_five_users, 'is_you')) !== false ? array_search(true, array_column($first_five_users, 'is_you')) + 1 : '--',
-    'user_points' => '<i class="'.($icon ? $icon :'fa fa-star').'" style="color: '. (($colorcode != "#ffffff" && !empty($colorcode)) ? $colorcode : "#fb0") .';"></i> '.$userpoints.' Points',
+    'user_rank' => array_search(true, array_column($first_five_users, 'is_you')) !== false
+        ? array_search(true, array_column($first_five_users, 'is_you')) + 1
+        : get_string('norank', 'local_leaderboard'),
+    'user_points' => local_leaderboard_render_points_badge($displayicon, $displaycolor, $userpoints, $pointslabel),
     'next_level' => $nextlevel ? $nextlevel->name : null,
     'points_to_next' => $points_to_next > 0 ? $points_to_next : 0,
     'progress_pct' => $progress_pct,
-    'userlevel' => $userlevel ? $userlevel->name : '—',
+    'userlevel' => $userlevel ? $userlevel->name : get_string('nolevel', 'local_leaderboard'),
     'is_country' => $is_country,
 ];
 
@@ -154,12 +186,14 @@ $templatecontext = [
 
 $baseurl = new moodle_url('/local/leaderboard/index.php', $filter_levelid ? ['levelid' => $filter_levelid] : []);
 
-$countryurl = new moodle_url('/local/leaderboard/index.php', array_merge($filter_levelid ? ['levelid' => $filter_levelid] : [], ['country' => $USER->country]));
- 
+$countryurl = new moodle_url(
+    '/local/leaderboard/index.php',
+    array_merge($filter_levelid ? ['levelid' => $filter_levelid] : [], ['country' => $USER->country])
+);
+
 $templatecontext['toggle_global_url'] = $baseurl->out();
- 
+
 $templatecontext['toggle_country_url'] = $countryurl->out();
- 
 
 echo $OUTPUT->header();
 

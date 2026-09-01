@@ -26,8 +26,8 @@ require_capability('local/leaderboard:manage', context_system::instance());
 
 $PAGE->set_context(context_system::instance());
 $PAGE->set_url(new moodle_url('/local/leaderboard/manage_rules.php'));
-$PAGE->set_title(get_string('add_pts_rule','local_leaderboard'));
-$PAGE->set_heading(get_string('add_pts_rule','local_leaderboard'));
+$PAGE->set_title(get_string('add_pts_rule', 'local_leaderboard'));
+$PAGE->set_heading(get_string('add_pts_rule', 'local_leaderboard'));
 
 global $DB;
 
@@ -35,7 +35,7 @@ global $DB;
 if ($deleteid = optional_param('delete', 0, PARAM_INT)) {
     require_sesskey();
     $DB->delete_records('local_leaderboard_rules', ['id' => $deleteid]);
-    redirect('manage_rules.php', 'Rule deleted.', 1);
+    redirect('manage_rules.php', get_string('ruledeleted', 'local_leaderboard'), 1);
 }
 
 // --- Pick up POST or GET params to allow dynamic refresh ---
@@ -58,7 +58,7 @@ if ($mform->is_cancelled()) {
     redirect('manage_rules.php');
 } else if ($data = $mform->get_data()) {
     $opcmid = optional_param('cmid', 0, PARAM_INT);
-    $data->cmid = $opcmid; 
+    $data->cmid = $opcmid;
 
     // Save rule!
     $activitytype = $data->activitytype;
@@ -74,14 +74,14 @@ if ($mform->is_cancelled()) {
         'points' => $data->points
     ];
     $DB->insert_record('local_leaderboard_rules', $newrule);
-    redirect('manage_rules.php', 'Rule added!', 2);
+    redirect('manage_rules.php', get_string('ruleadded', 'local_leaderboard'), 2);
 }
 
 echo $OUTPUT->header();
 echo html_writer::div(
     html_writer::link(
         new moodle_url('/local/leaderboard/manage_level.php'),
-        'Manage Level',
+        get_string('managelevel', 'local_leaderboard'),
         ['class' => 'btn btn-primary']
     ),
     'relatebtn'

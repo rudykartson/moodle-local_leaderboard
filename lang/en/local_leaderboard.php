@@ -29,7 +29,7 @@ $string['privacy:metadata:local_leaderboard_points:courseid'] = 'ID of the cours
 $string['privacy:metadata:local_leaderboard_points:cmid'] = 'ID of the course module to which the points belong.';
 $string['privacy:metadata:local_leaderboard_points:points'] = 'The points awarded to the user.';
 $string['privacy:metadata:local_leaderboard_points:event'] = 'The event stores the trigger status — either started or completed — that triggered the point award.';
-$string['privacy:metadata:local_leaderboard_points(timecreated'] = 'The time when the points were created.';
+$string['privacy:metadata:local_leaderboard_points:timecreated'] = 'The time when the points were created.';
 $string['manage'] = 'Leaderboard Points Rules';
 $string['levels'] = 'Leaderboard Levels/Tiers';
 $string['toprenker'] = 'Leaderboard Top 10';
@@ -81,13 +81,24 @@ $string['default_points_icon_name'] = 'fa fa-star';
 
 $string['referralsetup_heading'] = 'Referral points setup';
 $string['referralsetup_desc'] = 'To use the referral points functionality, you must first create a custom user profile field with the exact settings below. Referral points will not be calculated until this field exists.';
-$string['referralsetup_shortname'] = 'Short name';
-$string['referralsetup_type'] = 'Profil Type';
-$string['referralsetup_name'] = 'Name';
-$string['referralsetup_required'] = 'Is this field required';
-$string['referralsetup_locked'] = 'Is this field locked';
-$string['referralsetup_unique'] = 'Should the data be unique';
-$string['referralsetup_signup'] = 'Display on signup page';
-$string['referralsetup_visible'] = 'Who is this field visible to';
+$string['referralsetup_shortname'] = 'Short name: {$a}';
+$string['referralsetup_type'] = 'Profil type: {$a}';
+$string['referralsetup_name'] = 'Name: {$a}';
+$string['referralsetup_required'] = 'Is this field required: {$a}';
+$string['referralsetup_locked'] = 'Is this field locked: {$a}';
+$string['referralsetup_unique'] = 'Should the data be unique: {$a}';
+$string['referralsetup_signup'] = 'Display on signup page: {$a}';
+$string['referralsetup_visible'] = 'Who is this field visible to: {$a}';
 $string['referralsetup_visible_everyone'] = 'Visible to everyone';
 $string['referralsetup_createlink'] = 'Create this profile field now';
+$string['referralsetup_fieldtype_text'] = 'Text input';
+
+$string['notier'] = '-';
+$string['norank'] = '--';
+$string['nolevel'] = '—';
+$string['alllevels'] = 'All Levels';
+
+
+$string['ruledeleted'] = 'Rule deleted.';
+$string['ruleadded'] = 'Rule added!';
+$string['managelevel'] = 'Manage Level';
