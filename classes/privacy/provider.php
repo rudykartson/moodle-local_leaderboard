@@ -41,32 +41,49 @@ class provider implements
      * @param collection $collection The initialised collection to add items to.
      * @return collection
      */
-    public static function get_metadata(collection $collection): collection {
-        $tables = [
-                'local_leaderboard_points' => [
-                    'userid',
-                    'courseid',
-                    'cmid',
-                    'points',
-                    'event',
-                    'timecreated',
-                ],
-        ];
 
-        foreach ($tables as $table => $fields) {
-            $fielddata = [];
-            foreach ($fields as $field) {
-                $fielddata[$field] = get_string('privacy:metadata:' . $table . ':' . $field, 'local_leaderboard');
-            }
-            $collection->add_database_table(
-                $table,
-                $fielddata,
-                get_string('privacy:metadata:' . $table, 'local_leaderboard')
-            );
-        }
+    public static function get_metadata(collection $collection): collection {
+        $collection->add_database_table(
+            'local_leaderboard_points',
+            [
+                'userid' => 'privacy:metadata:local_leaderboard_points:userid',
+                'courseid' => 'privacy:metadata:local_leaderboard_points:courseid',
+                'cmid' => 'privacy:metadata:local_leaderboard_points:cmid',
+                'points' => 'privacy:metadata:local_leaderboard_points:points',
+                'event' => 'privacy:metadata:local_leaderboard_points:event',
+                'timecreated' => 'privacy:metadata:local_leaderboard_points:timecreated',
+            ],
+            'privacy:metadata:local_leaderboard_points'
+        );
 
         return $collection;
     }
+    // public static function get_metadata(collection $collection): collection {
+    //     $tables = [
+    //             'local_leaderboard_points' => [
+    //                 'userid',
+    //                 'courseid',
+    //                 'cmid',
+    //                 'points',
+    //                 'event',
+    //                 'timecreated',
+    //             ],
+    //     ];
+
+    //     foreach ($tables as $table => $fields) {
+    //         $fielddata = [];
+    //         foreach ($fields as $field) {
+    //             $fielddata[$field] = get_string('privacy:metadata:' . $table . ':' . $field, 'local_leaderboard');
+    //         }
+    //         $collection->add_database_table(
+    //             $table,
+    //             $fielddata,
+    //             get_string('privacy:metadata:' . $table, 'local_leaderboard')
+    //         );
+    //     }
+
+    //     return $collection;
+    // }
 
 
 

@@ -64,7 +64,7 @@ $mform = new local_leaderboard_level_form(null, $customdata);
 if ($mform->is_cancelled()) {
     redirect('manage_level.php');
 } else if ($data = $mform->get_data()) {
-    $clr = optional_param('color', '#778899', PARAM_TEXT);
+    $clr = optional_param('color', get_string('default_level_colorcode', 'local_leaderboard'), PARAM_TEXT);
     $data->color = $clr;
 
     $editid = $data->lid;
@@ -142,7 +142,7 @@ echo $OUTPUT->header();
 echo html_writer::div(
     html_writer::link(
         new moodle_url('/local/leaderboard/manage_rules.php'),
-        'Manage Rules',
+        get_string('manage_rule', 'local_leaderboard'),
         ['class' => 'btn btn-primary']
     ),
     'relatebtn'

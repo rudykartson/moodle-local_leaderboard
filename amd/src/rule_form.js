@@ -50,7 +50,7 @@ define([], function() {
      * @param {Object} items Map of value => label.
      */
     const populateSelect = (select, items) => {
-        select.innerHTML = '';
+        select.replaceChildren();
 
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '0';
@@ -64,7 +64,6 @@ define([], function() {
             select.appendChild(opt);
         });
     };
-
     /**
      * Update the course/activity inputs based on the selected scope.
      */

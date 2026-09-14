@@ -64,7 +64,7 @@ class local_leaderboard_rule_form extends moodleform {
         $mform->setType('cmid', PARAM_INT);
 
         // Activity Type (readonly).
-        $mform->addElement('text', 'activitytype', 'Activity Type', ['readonly' => 'readonly', 'id' => 'id_activitytype']);
+        $mform->addElement('text', 'activitytype', get_string('activitytype', 'local_leaderboard'), ['readonly' => 'readonly', 'id' => 'id_activitytype']);
         $mform->setType('activitytype', PARAM_TEXT);
 
         // Event.
@@ -109,19 +109,19 @@ class local_leaderboard_rule_form extends moodleform {
         $levels = $DB->get_records('local_leaderboard_levels');
 
         if (empty($levels)) {
-            $errors['points'] = 'Please create a Level/Tier first before proceeding..';
+            $errors['points'] = get_string('rulepoint_error', 'local_leaderboard');
         }
 
         if ($data['scope'] === 'course' && (int)$data['courseid'] === 0) {
-            $errors['courseid'] = 'You must select a course for this rule.';
+            $errors['courseid'] = get_string('rulecid_error', 'local_leaderboard');
         }
 
         if ($data['scope'] === 'activity') {
             if ((int)$data['courseid'] === 0) {
-                $errors['courseid'] = 'You must select a course for this rule.';
+                $errors['courseid'] = get_string('rulecid_error', 'local_leaderboard');
             }
             if ((int)$opcmid === 0) {
-                $errors['cmid'] = 'You must select an activity for this rule.';
+                $errors['cmid'] = get_string('rulecmid_error', 'local_leaderboard');
             }
         }
 

@@ -78,7 +78,7 @@ class local_leaderboard_level_form extends moodleform {
             'accepted_types' => ['.png'],
         ];
 
-        $mform->addElement('filemanager', 'levelimage', 'Level Image', null, $fileoptions);
+        $mform->addElement('filemanager', 'levelimage', get_string('level_image', 'local_leaderboard'), null, $fileoptions);
 
         $draftitemid = file_get_submitted_draft_itemid('levelimage');
 
@@ -113,11 +113,11 @@ class local_leaderboard_level_form extends moodleform {
         $sorder = $DB->get_record('local_leaderboard_levels', ['sortorder' => $data['sortorder']]);
 
         if ($sorder && (int) $data['lid'] === 0) {
-            $errors['sortorder'] = 'This order already exist.';
+            $errors['sortorder'] = get_string('sortorder_error', 'local_leaderboard');
         }
 
         if ($data['max_points'] <= $data['min_points']) {
-            $errors['max_points'] = 'You must add greater value.';
+            $errors['max_points'] = get_string('maxpoint_error', 'local_leaderboard');
         }
 
         return $errors;
