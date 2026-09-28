@@ -30,7 +30,6 @@ $capabilities = [
             'student' => CAP_ALLOW,
             'teacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
-            'admin' => CAP_ALLOW,
         ],
     ],
     'local/leaderboard:manage' => [
@@ -39,7 +38,6 @@ $capabilities = [
         'contextlevel' => CONTEXT_SYSTEM,
         'archetypes' => [
             'manager' => CAP_ALLOW,
-            'admin' => CAP_ALLOW,
         ],
     ],
 ];

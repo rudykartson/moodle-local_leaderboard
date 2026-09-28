@@ -24,8 +24,6 @@ defined('MOODLE_INTERNAL') || die();
 // Technical identifiers (NOT translatable — must match the exact profile
 // field shortname/name configured in Moodle, so they stay as constants
 // rather than get_string() calls).
-define('LOCAL_LEADERBOARD_REFERRAL_FIELD_SHORTNAME', 'refuserid');
-define('LOCAL_LEADERBOARD_REFERRAL_FIELD_NAME', 'Refuserid');
 
 if ($hassiteconfig) {
 
@@ -46,7 +44,7 @@ if ($hassiteconfig) {
         'local_leaderboard/defaultcertpointscolor',
         get_string('default_points_color', 'local_leaderboard'),
         get_string('default_points_color_desc', 'local_leaderboard'),
-        get_string('default_points_color_code', 'local_leaderboard'),
+        \local_leaderboard\api::DEFAULT_POINTS_COLOR,
     ));
 
     // Icon setting (let admin enter an icon class name, e.g., 'fa fa-star').
@@ -54,7 +52,7 @@ if ($hassiteconfig) {
         'local_leaderboard/defaultpointsicon',
         get_string('default_points_icon', 'local_leaderboard'),
         get_string('default_points_icon_desc', 'local_leaderboard'),
-        get_string('default_points_icon_name', 'local_leaderboard'),
+        \local_leaderboard\api::DEFAULT_POINTS_ICON,
     ));
 
     $settings->add(new admin_setting_configtext(
@@ -98,11 +96,11 @@ if ($hassiteconfig) {
 
     $referralinfo .= html_writer::tag('li',
         get_string('referralsetup_shortname', 'local_leaderboard',
-            html_writer::tag('code', LOCAL_LEADERBOARD_REFERRAL_FIELD_SHORTNAME)));
+            html_writer::tag('code', \local_leaderboard\api::REFERRAL_FIELD_SHORTNAME)));
 
     $referralinfo .= html_writer::tag('li',
         get_string('referralsetup_name', 'local_leaderboard',
-            html_writer::tag('code', LOCAL_LEADERBOARD_REFERRAL_FIELD_NAME)));
+            html_writer::tag('code', \local_leaderboard\api::REFERRAL_FIELD_NAME)));
 
     $referralinfo .= html_writer::tag('li',
         get_string('referralsetup_required', 'local_leaderboard', get_string('no')));

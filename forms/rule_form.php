@@ -19,6 +19,7 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir.'/formslib.php');
 require_login();
@@ -49,9 +50,8 @@ class local_leaderboard_rule_form extends moodleform {
 
         // Scope.
         $mform->addElement('select', 'scope', 'Scope', [
-            // 'platform' => 'Platform-wide',
-            'course'   => 'Course',
-            'activity' => 'Activity',
+            'course'   => get_string('course', 'local_leaderboard'),
+            'activity' => get_string('activity', 'local_leaderboard'),
         ], ['id' => 'id_scope']);
         $mform->setType('scope', PARAM_TEXT);
 

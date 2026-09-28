@@ -25,6 +25,11 @@ defined('MOODLE_INTERNAL') || die();
 
 class api {
 
+    const REFERRAL_FIELD_SHORTNAME = 'refuserid';
+    const REFERRAL_FIELD_NAME = 'Refuserid';
+    const DEFAULT_POINTS_COLOR = '#fb0';
+    const DEFAULT_POINTS_ICON  = 'fa fa-star';
+
     /**
      * Find the most specific points rule for an activity.
      */
@@ -51,7 +56,6 @@ class api {
             $rule = $DB->get_record('local_leaderboard_rules', [
                 'scope' => 'course',
                 'scopeid' => (int)$courseid,
-                'activitytype' => $activitytype,
                 'event' => $event
             ]);
 
@@ -60,13 +64,7 @@ class api {
             }
         }
 
-        // Platform level rule.
-        return $DB->get_record('local_leaderboard_rules', [
-            'scope' => 'platform',
-            'scopeid' => 0,
-            'activitytype' => $activitytype,
-            'event' => $event
-        ]);
+        return false;
     }
 
     /**
@@ -75,7 +73,7 @@ class api {
     public static function get_user_points($userid) {
         global $DB;
         $refcode = 'refusrid'.$userid;
-        $refuser = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM {user_info_data} uid JOIN {user_info_field} uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=>"refuserid","uidata"=>$refcode]);
+        $refuser = $DB->get_record_sql('SELECT COUNT(DISTINCT uid.userid) AS total_users FROM {user_info_data} uid JOIN {user_info_field} uif ON uif.id = uid.fieldid WHERE uif.shortname = :uifshortname AND uid.data = :uidata',["uifshortname"=> self::REFERRAL_FIELD_SHORTNAME,"uidata"=>$refcode]);
         
         $sum = $DB->get_field_sql("SELECT SUM(points) FROM {local_leaderboard_points} WHERE userid = ?", [$userid]);
         
@@ -197,7 +195,7 @@ class api {
                 WHERE uif.shortname = :shortname
                 GROUP BY uid.data";
 
-        $records = $DB->get_records_sql($sql, ['shortname' => 'refuserid']);
+        $records = $DB->get_records_sql($sql, ['shortname' => self::REFERRAL_FIELD_SHORTNAME ]);
 
         $counts = [];
         foreach ($records as $record) {

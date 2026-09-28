@@ -58,35 +58,7 @@ class provider implements
 
         return $collection;
     }
-    // public static function get_metadata(collection $collection): collection {
-    //     $tables = [
-    //             'local_leaderboard_points' => [
-    //                 'userid',
-    //                 'courseid',
-    //                 'cmid',
-    //                 'points',
-    //                 'event',
-    //                 'timecreated',
-    //             ],
-    //     ];
-
-    //     foreach ($tables as $table => $fields) {
-    //         $fielddata = [];
-    //         foreach ($fields as $field) {
-    //             $fielddata[$field] = get_string('privacy:metadata:' . $table . ':' . $field, 'local_leaderboard');
-    //         }
-    //         $collection->add_database_table(
-    //             $table,
-    //             $fielddata,
-    //             get_string('privacy:metadata:' . $table, 'local_leaderboard')
-    //         );
-    //     }
-
-    //     return $collection;
-    // }
-
-
-
+   
     /**
      * Get the contexts where this user has data.
      */
@@ -265,6 +237,4 @@ class provider implements
         );
     }
 
-
-    // Privacy API methods here.
 }

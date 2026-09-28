@@ -18,6 +18,7 @@
  * @copyright   2026 Rudraksh Batra <batra.rudraksh@gmail.com>
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
+defined('MOODLE_INTERNAL') || die();
 
 $observers =  [
     [
@@ -41,11 +42,6 @@ $observers =  [
         'callback'    => '\local_leaderboard\observer::course_completed',
         'priority'    => 9999,
         'internal'    => false,
-    ],
-    [
-        'eventname'   => '\core\event\user_loggedin',
-        'callback'    => '\local_leaderboard\observer::loggedinn',
-        'priority'    => 9999, // optional
     ],
 ];
  

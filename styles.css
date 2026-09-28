@@ -1,6 +1,6 @@
 /* Leaderboard Styles */
 
-.leadadmin{
+#page-local-leaderboard-leaderboard .leadadmin{
     .lb-tabs { display: flex; gap: 1.2rem; margin-bottom: 1rem; flex-wrap: wrap; }
     .lb-tab { padding: 0.35rem 1.15rem; border-radius: 1.2rem; font-weight: bold; cursor: pointer; background: #f5f5fa; }
     .lb-tab.active { background: #234dbf; color: #fff; }
@@ -93,10 +93,15 @@
     height: 80px;
     width: 180px;
 }
-.relatebtn{
-    display: flex;
-    justify-content: end;
+
+#page-local-leaderboard-manage_level,
+#page-local-leaderboard-manage_rules{
+    .relatebtn{
+        display: flex;
+        justify-content: end;
+    }
 }
+
 
 .lb-tier-tab .pmag{
     display: grid;

@@ -43,7 +43,7 @@
     <div class="lb-rank-points">
         <span>Your Rank: <b>{{user_rank}}</b></span>
         <span style="margin-left:1em;">
-            {{{user_points}}}
+            {{#user_points}}<i class="{{icon}}" style="color: {{color}};"></i> {{value}} {{label}}{{/user_points}}
         </span>
     </div>
     {{#next_level}}
@@ -71,7 +71,7 @@
                 <td>{{name}}</td>
                 <td>{{country}}</td>
                 <td>{{tier}}</td>
-                <td>{{{points}}}</td>
+                <td>{{#points}}<i class="{{icon}}" style="color: {{color}};"></i> {{value}} {{label}}{{/points}}</td>
             </tr>
         {{/users}}
         {{^users}}

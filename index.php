@@ -28,9 +28,6 @@ require_once($CFG->dirroot."/lib/filelib.php");
 require_once($CFG->dirroot.'/local/leaderboard/classes/api.php');
 
 // Constants for default/fallback values (previously hardcoded inline).
-define('LOCAL_LEADERBOARD_DEFAULT_ICON', 'fa fa-star');
-define('LOCAL_LEADERBOARD_DEFAULT_COLOR', '#fb0');
-define('LOCAL_LEADERBOARD_WHITE_COLOR', '#ffffff');
 define('LOCAL_LEADERBOARD_IMG_PATH_PREFIX', 'assets/img');
 define('LOCAL_LEADERBOARD_IMG_PATH_SUFFIX', '.png');
 
@@ -134,8 +131,8 @@ $colorcode = get_config('local_leaderboard', 'defaultcertpointscolor');
 $icon = get_config('local_leaderboard', 'defaultpointsicon');
 
 $pointslabel = get_string('points', 'local_leaderboard');
-$displayicon = $icon ? $icon : LOCAL_LEADERBOARD_DEFAULT_ICON;
-$displaycolor = ($colorcode != LOCAL_LEADERBOARD_WHITE_COLOR && !empty($colorcode)) ? $colorcode : LOCAL_LEADERBOARD_DEFAULT_COLOR;
+$displayicon = $icon ? $icon : \local_leaderboard\api::DEFAULT_POINTS_ICON;
+$displaycolor = (!empty($colorcode)) ? $colorcode : \local_leaderboard\api::DEFAULT_POINTS_COLOR;
 
 /**
  * Build the HTML markup for a points badge.
@@ -146,8 +143,21 @@ $displaycolor = ($colorcode != LOCAL_LEADERBOARD_WHITE_COLOR && !empty($colorcod
  * @param string $label Localised "Points" label.
  * @return string
  */
-function local_leaderboard_render_points_badge($iconclass, $color, $points, $label) {
-    return '<i class="' . $iconclass . '" style="color: ' . $color . ';"></i> ' . $points . ' ' . $label;
+function local_leaderboard_get_points_badge($iconclass, $color, $points, $label) {
+    
+    if (!preg_match('/^[a-z0-9 _-]+$/i', (string)$iconclass)) {
+        $iconclass = \local_leaderboard\api::DEFAULT_POINTS_ICON;
+    }
+
+    if (!preg_match('/^#[0-9a-f]{3,8}$/i', (string)$color)) {
+        $color = \local_leaderboard\api::DEFAULT_POINTS_COLOR;
+    }
+    return [
+        'icon'  => $iconclass,
+        'color' => $color,
+        'value' => (int)$points,
+        'label' => $label,
+    ];
 }
 
 $users = [];
@@ -159,7 +169,7 @@ foreach ($leaderboard as $u) {
     $users[] = [
         'rank' => sprintf('%02d', $rank++),
         'name' => fullname($u),
-        'points' => local_leaderboard_render_points_badge($displayicon, $displaycolor, $u->totalpoints, $pointslabel),
+        'points' => local_leaderboard_get_points_badge($displayicon, $displaycolor, $u->totalpoints, $pointslabel),
         'country' => isset($u->country) ? $u->country : '',  // ensure your query returns this
         'tier' => $user_tier ? $user_tier->name : get_string('notier', 'local_leaderboard'),
         'is_you' => $is_you,
@@ -174,7 +184,7 @@ $templatecontext = [
     'user_rank' => array_search(true, array_column($first_five_users, 'is_you')) !== false
         ? array_search(true, array_column($first_five_users, 'is_you')) + 1
         : get_string('norank', 'local_leaderboard'),
-    'user_points' => local_leaderboard_render_points_badge($displayicon, $displaycolor, $userpoints, $pointslabel),
+    'user_points' => local_leaderboard_get_points_badge($displayicon, $displaycolor, $userpoints, $pointslabel),
     'next_level' => $nextlevel ? $nextlevel->name : null,
     'points_to_next' => $points_to_next > 0 ? $points_to_next : 0,
     'progress_pct' => $progress_pct,

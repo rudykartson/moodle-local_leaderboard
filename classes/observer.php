@@ -119,73 +119,34 @@ class observer {
      */
     public static function course_completed(\core\event\course_completed $event) {
         global $DB, $USER;
-        //-------------log for completion-----------------
-        // $data = print_r($event->get_data(), true);
-        // $logfile = '/var/www/html/moodle/local/leaderboard/logs/course_complete.log';
-        // // Make sure directory exists and is writable
-        // if (!file_exists(dirname($logfile))) {
-        //     mkdir(dirname($logfile), 0777, true);
-        // }
-        // file_put_contents($logfile, date('Y-m-d H:i:s') . " - Course Completed Event:\n" . $data . "\n\n", FILE_APPEND);
-        
+
         $userid = $event->relateduserid;
         $courseid = $event->courseid;
-        $event = 'complete';
-        $activitytype = '';
-        $cmid = '';
-        $rule = api::find_points_rule($cmid, $courseid, $activitytype, $event);
+        $eventname = 'complete';
+        $activitytype = null;
+        $cmid = null;
+        
 
-        $assignpoint = $DB->get_record('local_leaderboard_points',["userid"=>$userid,"courseid"=>$courseid,'cmid' => "",'event' => $event]);
+        $rule = api::find_points_rule($cmid, $courseid, $activitytype, $eventname);
+        
+        $assignpoint = $DB->get_record('local_leaderboard_points',["userid"=>$userid,"courseid"=>$courseid,'cmid' => $cmid,'event' => $eventname]);
+
         if(!$assignpoint){
-             if ($rule && $rule->points > 0) {
-                $DB->insert_record('local_leaderboard_points', [
+            if ($rule && $rule->points > 0) {
+                $arrdata = [
                     'userid' => $userid,
                     'courseid' => $courseid,
                     'cmid' => $cmid,
                     'points' => $rule->points,
-                    'event' => $event,
+                    'event' => $eventname,
                     'timecreated' => time(),
-                ]);
+                    ];
+                $DB->insert_record('local_leaderboard_points', $arrdata);
+                
             }
         }
-
+        
+        
     }
-
-    // public static function acticity_h5p_view(\core_h5p\event\h5p_viewed $event) {
-    //     global $DB, $USER;
-    //     //-------------log for completion-----------------
-    //     $data = print_r($event->get_data(), true);
-    //     $logfile = '/var/www/html/moodle/local/leaderboard/logs/course_complete.log';
-    //     // Make sure directory exists and is writable
-    //     if (!file_exists(dirname($logfile))) {
-    //         mkdir(dirname($logfile), 0777, true);
-    //     }
-    //     file_put_contents($logfile, date('Y-m-d H:i:s') . " - Course Completed Event:\n" . $data . "\n\n", FILE_APPEND);
-    // }
-    
-    public static function loggedinn(\core\event\user_loggedin $event) {
-        global $DB;
-    
-        $userid = $event->get_data()['userid'];
-    
-        $user = $DB->get_record('user', ['id' => $userid], '*', MUST_EXIST);
-    
-        // Detect first login via OAuth2
-        if ($user->lastlogin == 0 && $user->auth === 'oauth2') {
-    
-            // Auto-accept all required policies
-            if (class_exists('\tool_policy\api')) {
-                \tool_policy\api::accept_policies($userid);
-            }
-    
-            redirect(
-                '/myaccount',
-                "Please complete your profile.",
-                null,
-                \core\output\notification::NOTIFY_WARNING
-            );
-        }
-    }
-
     
 }

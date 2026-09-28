@@ -89,9 +89,7 @@ echo html_writer::div(
 $mform->display();
 
 // --- Show existing rules ---
-$rules = $DB->get_records_sql(
-    'SELECT lr.* FROM {local_leaderboard_rules} lr JOIN {course_modules} cm ON lr.scopeid = cm.id'
-);
+$rules = $DB->get_records('local_leaderboard_rules');
 
     // --- Pass 1: collect every id we'll need to look up. ---
     $courseids = [];

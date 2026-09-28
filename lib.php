@@ -19,7 +19,9 @@
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-function local_leaderboard_extends_navigation(global_navigation $nav) {
+defined('MOODLE_INTERNAL') || die();
+
+function local_leaderboard_extend_navigation(global_navigation $nav) {
     $context = context_system::instance();
     if (has_capability('local/leaderboard:view', $context)) {
         $leaderboardurl = new moodle_url('/local/leaderboard/leaderboard.php');
