@@ -39,6 +39,13 @@ if ($hassiteconfig) {
     // Create the settings page and add it to the new category.
     $settings = new admin_settingpage('local_leaderboard_settings', $pluginname);
 
+        $settings->add(new admin_setting_heading(
+        'local_leaderboard/pageheading',
+        get_string('pageheading', 'local_leaderboard'),
+        get_string('pageheading_desc', 'local_leaderboard')
+    ));
+
+
     // Add a color picker setting.
     $settings->add(new admin_setting_configcolourpicker(
         'local_leaderboard/defaultcertpointscolor',

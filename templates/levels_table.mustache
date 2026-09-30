@@ -28,7 +28,7 @@
 
     Example context (json):
     {
-        "haslevels": true,
+        "haslevels": true, 
         "existinglevelsstr": "Existing Levels",
         "levelnamestr": "Level name",
         "minpointsstr": "Min points",
@@ -80,5 +80,5 @@
 </table>
 {{/haslevels}}
 {{^haslevels}}
-<p>No levels have been added yet.</p>
+<p>{{#str}}nolevel, local_leaderboard{{/str}}</p>
 {{/haslevels}}

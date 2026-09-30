@@ -27,28 +27,28 @@
                 <img src="{{{icon}}}" alt="img{{id}}" class="tier-bg-icon">
             </a>
         {{/tiers}}
-    </div>
+    </div> 
     <div class="togglesection">
-        <label><b>Global</b></label>
+        <label><b>{{#str}}global, local_leaderboard{{/str}}</b></label>
         <div class="lb-country-toggle">
             <a href="{{toggle_global_url}}" class="lb-switch{{^is_country}} lb-switch-on{{/is_country}}">🌍</a>
             <a href="{{{toggle_country_url}}}" class="lb-switch{{#is_country}} lb-switch-on{{/is_country}}">🏠</a>
         </div>
-        <label><b>Country</b></label><br/>
+        <label><b>{{#str}}country, local_leaderboard{{/str}}</b></label><br/>
         <div class="cleanfilter"><a href="{{pgurl}}">{{cleanpgurltxt}}</a></div>
     </div>
 </div>
 
 <div class="lb-card">
     <div class="lb-rank-points">
-        <span>Your Rank: <b>{{user_rank}}</b></span>
+        <span>{{#str}}yourrank, local_leaderboard{{/str}} <b>{{user_rank}}</b></span>
         <span style="margin-left:1em;">
             {{#user_points}}<i class="{{icon}}" style="color: {{color}};"></i> {{value}} {{label}}{{/user_points}}
         </span>
     </div>
     {{#next_level}}
     <div class="lb-progress-row">
-        <span>Progress: <b>{{points_to_next}}</b> pts to {{next_level}}</span>
+        <span>{{#str}}progress, local_leaderboard{{/str}} <b>{{points_to_next}}</b> pts to {{next_level}}</span>
         <div class="lb-progress-bar"><div class="lb-progress" style="width:{{progress_pct}}%"></div></div>
     </div>
     {{/next_level}}
@@ -57,11 +57,11 @@
 <table class="lb-table">
     <thead>
         <tr>
-            <th>Rank</th>
-            <th>Learner</th>
-            <th>Country</th>
-            <th>Tier</th>
-            <th>Points</th>
+            <th>{{#str}}rank, local_leaderboard{{/str}}</th>
+            <th>{{#str}}learner, local_leaderboard{{/str}}</th>
+            <th>{{#str}}country, local_leaderboard{{/str}}</th>
+            <th>{{#str}}tier, local_leaderboard{{/str}}</th>
+            <th>{{#str}}points, local_leaderboard{{/str}}</th>
         </tr>
     </thead>
     <tbody>
@@ -75,7 +75,7 @@
             </tr>
         {{/users}}
         {{^users}}
-            <tr><td colspan="5" style="text-align:center;color:#aaa;">No data yet</td></tr>
+            <tr><td colspan="5" style="text-align:center;color:#aaa;">{{#str}}nodatayet, local_leaderboard{{/str}}</td></tr>
         {{/users}}
     </tbody>
 </table>

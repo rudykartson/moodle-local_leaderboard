@@ -30,7 +30,7 @@
         "rows": [
             {
                 "scope": "course",
-                "scopeid": 2,
+                "scopeid": 2, 
                 "coursename": "Sample course",
                 "activityname": "",
                 "activitytype": "quiz",
@@ -46,14 +46,14 @@
 {{#hasrules}}
 <table class="generaltable" style="background-color: #fff;">
     <tr>
-        <th>Scope</th>
-        <th>ScopeID</th>
-        <th>Course</th>
-        <th>Activity</th>
-        <th>Activity Type</th>
-        <th>Event</th>
-        <th>Points</th>
-        <th>Actions</th>
+        <th>{{#str}}scope, local_leaderboard{{/str}}</th>
+        <th>{{#str}}scopeid, local_leaderboard{{/str}}</th>
+        <th>{{#str}}course, local_leaderboard{{/str}}</th>
+        <th>{{#str}}activity, local_leaderboard{{/str}}</th>
+        <th>{{#str}}activitytype, local_leaderboard{{/str}}</th>
+        <th>{{#str}}event, local_leaderboard{{/str}}</th>
+        <th>{{#str}}points, local_leaderboard{{/str}}</th>
+        <th>{{#str}}actions, local_leaderboard{{/str}}</th>
     </tr>
     {{#rows}}
     <tr>
@@ -65,12 +65,12 @@
         <td>{{event}}</td>
         <td>{{points}}</td>
         <td>
-            <a href="{{deleteurl}}" onclick="return confirm('Delete this rule?')">Delete</a>
+            <a href="{{deleteurl}}" onclick="return confirm({{#str}}deletethisrule, local_leaderboard{{/str}})">{{#str}}delete, local_leaderboard{{/str}}</a>
         </td>
     </tr>
     {{/rows}}
 </table>
 {{/hasrules}}
 {{^hasrules}}
-<p>No rules have been added yet.</p>
+<p>{{#str}}noruleyet, local_leaderboard{{/str}}</p>
 {{/hasrules}}

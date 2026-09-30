@@ -49,18 +49,18 @@ class local_leaderboard_rule_form extends moodleform {
         }
 
         // Scope.
-        $mform->addElement('select', 'scope', 'Scope', [
+        $mform->addElement('select', 'scope', get_string('scope', 'local_leaderboard'), [
             'course'   => get_string('course', 'local_leaderboard'),
             'activity' => get_string('activity', 'local_leaderboard'),
         ], ['id' => 'id_scope']);
         $mform->setType('scope', PARAM_TEXT);
 
         // Course.
-        $mform->addElement('select', 'courseid', 'Course', [0 => '-- Select --'] + $courses, ['id' => 'id_courseid']);
+        $mform->addElement('select', 'courseid', get_string('course', 'local_leaderboard'), [0 => get_string('selectag', 'local_leaderboard')] + $courses, ['id' => 'id_courseid']);
         $mform->setType('courseid', PARAM_INT);
 
         // Activity.
-        $mform->addElement('select', 'cmid', 'Activity', [0 => '-- Select --'], ['id' => 'id_cmid']);
+        $mform->addElement('select', 'cmid', get_string('activity', 'local_leaderboard'), [0 => get_string('selectag', 'local_leaderboard')], ['id' => 'id_cmid']);
         $mform->setType('cmid', PARAM_INT);
 
         // Activity Type (readonly).
@@ -68,14 +68,14 @@ class local_leaderboard_rule_form extends moodleform {
         $mform->setType('activitytype', PARAM_TEXT);
 
         // Event.
-        $mform->addElement('select', 'event', 'Event', [
-            'start' => 'Start/View',
-            'complete' => 'Complete',
+        $mform->addElement('select', 'event', get_string('event', 'local_leaderboard'), [
+            'start' => get_string('startview', 'local_leaderboard'),
+            'complete' => get_string('complete', 'local_leaderboard'),
         ]);
         $mform->setType('event', PARAM_TEXT);
 
         // Points.
-        $mform->addElement('text', 'points', 'Points');
+        $mform->addElement('text', 'points', get_string('points', 'local_leaderboard'));
         $mform->setType('points', PARAM_INT);
 
         $this->add_action_buttons();

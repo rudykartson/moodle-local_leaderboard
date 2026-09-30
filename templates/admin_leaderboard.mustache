@@ -25,7 +25,7 @@
     * globalurl - string
     * countryurl - string
     * is_country - bool
-    * usercolorcode - string, hex colour for points icon
+    * usercolorcode - string, hex colour for points icon 
     * icon - string, icon classes
     * userrank - int|string
     * userlevelname - string
@@ -47,9 +47,9 @@
                 </a>
                 <div class="dropdown-menu menu dropdown-menu-end" id="dropdownMenuButton2"
                     data-rel="menu-content" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="./">View</a>
-                    <a class="dropdown-item" href="manage_level.php">Manage Level</a>
-                    <a class="dropdown-item" href="manage_rules.php">Manage Rules</a>
+                    <a class="dropdown-item" href="./">{{#str}}view, local_leaderboard{{/str}}</a>
+                    <a class="dropdown-item" href="manage_level.php">{{#str}}ruleadded, local_leaderboard{{/str}}</a>
+                    <a class="dropdown-item" href="manage_rules.php">{{#str}}managelevel, local_leaderboard{{/str}}</a>
                 </div>
             </div>
         {{/isadmin}}
@@ -65,12 +65,12 @@
     <!-- Global/Country filter -->
     <div class="headcleanfilteradmin" style="margin-bottom: 1.2rem;">
         <div class="togglesection">
-            <label><b>Global</b></label>
+            <label><b>{{#str}}global, local_leaderboard{{/str}}</b></label>
             <div class="lb-country-toggle">
                 <a href="{{globalurl}}" class="lb-switch {{^is_country}}lb-switch-on{{/is_country}}">🌍</a>
                 <a href="{{countryurl}}" class="lb-switch {{#is_country}}lb-switch-on{{/is_country}}">🏠</a>
             </div>
-            <label><b>Country</b></label>
+            <label><b>{{#str}}country, local_leaderboard{{/str}}</b></label>
         </div>
         <div class="cleanfilteradmin"><a href="{{globalurl}}">{{cleanpgurltxt}}</a></div>
     </div>
@@ -93,9 +93,9 @@
     <table class="generaltable lb-table">
         <thead>
             <tr>
-                <th>Rank</th>
-                <th>Learner</th>
-                <th>Tier</th>
+                <th>{{#str}}rank, local_leaderboard{{/str}}</th>
+                <th>{{#str}}learner, local_leaderboard{{/str}}</th>
+                <th>{{#str}}tier, local_leaderboard{{/str}}</th>
                 <th>{{pointsstring}}</th>
             </tr>
         </thead>
@@ -114,7 +114,7 @@
                 </tr>
             {{/rows}}
             {{^hasrows}}
-                <tr><td colspan="4" style="text-align:center;color:#aaa;">No data yet</td></tr>
+                <tr><td colspan="4" style="text-align:center;color:#aaa;">{{#str}}nodatayet, local_leaderboard{{/str}}</td></tr>
             {{/hasrows}}
         </tbody>
     </table>
